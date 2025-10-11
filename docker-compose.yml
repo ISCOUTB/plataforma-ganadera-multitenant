@@ -1,27 +1,38 @@
 version: '3.8'
 
 services:
-  web:
-    build: .
+  postgres:
+    image: postgres:15-alpine
+    container_name: plataforma-ganadera-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: plataforma_ganadera
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
     ports:
-      - "8000:8000"
+      - "5432:5432"
     volumes:
-      - ./src:/app/src
-    environment:
-      - ENV=development
-      - DATABASE_URL=postgresql://user:password@db:5432/mydatabase
-    depends_on:
-      - db
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - plataforma-network
 
-  db:
-    image: postgres:13
-    restart: always
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: plataforma-ganadera-pgadmin
+    restart: unless-stopped
     environment:
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: mydatabase
-    volumes:
-      - db_data:/var/lib/postgresql/data
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+    networks:
+      - plataforma-network
 
 volumes:
-  db_data:
+  postgres_data:
+
+networks:
+  plataforma-network:
+    driver: bridge
