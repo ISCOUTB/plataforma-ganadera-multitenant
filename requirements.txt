@@ -1,0 +1,14 @@
+Flask==2.0.3
+Flask-Cors==3.10.9
+Flask-SQLAlchemy==2.5.1
+Flask-Migrate==3.1.0
+python-dotenv==0.19.1
+pytest==6.2.4
+pytest-flask==1.2.0
+alembic==1.7.5
+pandas==1.3.3
+numpy==1.21.2
+requests==2.26.0
+marshmallow==3.14.1
+bcrypt==3.2.0
+PyJWT==2.1.0

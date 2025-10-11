@@ -1,0 +1,91 @@
+# Contents of the file: /sistema-ganadero-backend/sistema-ganadero-backend/src/db/seeders/__init__.py
+
+# This file is intentionally left blank.
+
+# Contents of the file: /sistema-ganadero-backend/sistema-ganadero-backend/src/db/seeders/user_seeder.py
+
+from sqlalchemy.orm import Session
+from app.models.user import User
+
+def seed_users(db: Session):
+    users = [
+        User(username='admin', password='admin123', role='admin'),
+        User(username='user1', password='user123', role='user'),
+        User(username='user2', password='user123', role='user'),
+    ]
+    
+    db.bulk_save_objects(users)
+    db.commit()
+
+# Contents of the file: /sistema-ganadero-backend/sistema-ganadero-backend/src/db/seeders/animal_seeder.py
+
+from sqlalchemy.orm import Session
+from app.models.animal import Animal
+
+def seed_animals(db: Session):
+    animals = [
+        Animal(id='A001', age=2, breed='Holstein', weight=500, productive_status='active'),
+        Animal(id='A002', age=3, breed='Jersey', weight=450, productive_status='active'),
+        Animal(id='A003', age=1, breed='Angus', weight=600, productive_status='inactive'),
+    ]
+    
+    db.bulk_save_objects(animals)
+    db.commit()
+
+# Contents of the file: /sistema-ganadero-backend/sistema-ganadero-backend/src/db/seeders/pasture_seeder.py
+
+from sqlalchemy.orm import Session
+from app.models.pasture import Pasture
+
+def seed_pastures(db: Session):
+    pastures = [
+        Pasture(id='P001', area=10, number_of_animals=5, occupancy_dates='2023-01-01 to 2023-01-15'),
+        Pasture(id='P002', area=15, number_of_animals=8, occupancy_dates='2023-01-16 to 2023-01-30'),
+    ]
+    
+    db.bulk_save_objects(pastures)
+    db.commit()
+
+# Contents of the file: /sistema-ganadero-backend/sistema-ganadero-backend/src/db/seeders/feed_seeder.py
+
+from sqlalchemy.orm import Session
+from app.models.feed import Feed
+
+def seed_feeds(db: Session):
+    feeds = [
+        Feed(id='F001', type='Hay', quantity=100, nutritional_value='High'),
+        Feed(id='F002', type='Grain', quantity=200, nutritional_value='Medium'),
+    ]
+    
+    db.bulk_save_objects(feeds)
+    db.commit()
+
+# Contents of the file: /sistema-ganadero-backend/sistema-ganadero-backend/src/db/seeders/cost_seeder.py
+
+from sqlalchemy.orm import Session
+from app.models.cost import Cost
+
+def seed_costs(db: Session):
+    costs = [
+        Cost(id='C001', type='Feed', amount=500, date='2023-01-01'),
+        Cost(id='C002', type='Veterinary', amount=300, date='2023-01-15'),
+    ]
+    
+    db.bulk_save_objects(costs)
+    db.commit()
+
+# Contents of the file: /sistema-ganadero-backend/sistema-ganadero-backend/src/db/seeders/main.py
+
+from sqlalchemy.orm import Session
+from .user_seeder import seed_users
+from .animal_seeder import seed_animals
+from .pasture_seeder import seed_pastures
+from .feed_seeder import seed_feeds
+from .cost_seeder import seed_costs
+
+def seed_all(db: Session):
+    seed_users(db)
+    seed_animals(db)
+    seed_pastures(db)
+    seed_feeds(db)
+    seed_costs(db)
