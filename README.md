@@ -2,7 +2,7 @@
 
 Sistema multitenant para gestión ganadera con NestJS + PostgreSQL + TypeORM
 
-## 🚀 Inicio Rápido
+##  Inicio Rápido
 
 ### Requisitos
 - Node.js 18+
@@ -27,18 +27,18 @@ npm run migration:run
 npm run dev
 ```
 
-## 📚 Documentación API
+## Documentación API
 
 http://localhost:3000/docs
 
-## 🧪 Testing
+## Testing
 ```bash
 npm run test
 npm run test:e2e
 npm run test:cov
 ```
 
-## 🏗️ Scripts
+## Scripts
 
 - `npm run dev` - Desarrollo
 - `npm run build` - Compilar
