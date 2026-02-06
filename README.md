@@ -1,4 +1,4 @@
-# Plataforma Ganadera Backend
+# Plataforma Ganadera 
 
 Sistema multitenant para gestión ganadera con NestJS + PostgreSQL + TypeORM
 
