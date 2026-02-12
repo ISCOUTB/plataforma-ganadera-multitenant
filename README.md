@@ -1,314 +1,292 @@
-# FarmLink 
+# 🐄 PLATAFORMA-GANADERA-MULTITENANT – FarmLink
 
-Backend API profesional construido con NestJS, TypeScript, Prisma y PostgreSQL.
+[<img src="https://img.icons8.com/?size=512&id=119635&format=png" align="right" width="25%">]()
 
-## 🚀 Tecnologías
+# FARMLINK
 
-- **NestJS** - Framework progresivo de Node.js
-- **TypeScript** - JavaScript con tipado estático
-- **Prisma** - ORM de próxima generación
-- **PostgreSQL 16** - Base de datos relacional
-- **JWT** - Autenticación basada en tokens
-- **bcrypt** - Hashing de contraseñas
-- **Swagger** - Documentación de API
-- **Docker** - Contenedorización
+#### Plataforma Inteligente de Gestión Ganadera Multitenant
 
-## 📋 Características
+<p align="left">
+	<img src="https://img.shields.io/github/license/ISCOUTB/plataforma-ganadera-multitenant?style=social&logo=opensourceinitiative&color=00ff1b" />
+	<img src="https://img.shields.io/github/last-commit/ISCOUTB/plataforma-ganadera-multitenant?style=social&logo=git&color=00ff1b" />
+	<img src="https://img.shields.io/github/languages/top/ISCOUTB/plataforma-ganadera-multitenant?style=social&color=00ff1b" />
+	<img src="https://img.shields.io/github/languages/count/ISCOUTB/plataforma-ganadera-multitenant?style=social&color=00ff1b" />
+</p>
 
-- ✅ Arquitectura modular escalable
-- ✅ Autenticación JWT (Access + Refresh tokens)
-- ✅ Multi-tenant con relaciones
-- ✅ Soft delete en modelos
-- ✅ Guard global JWT
-- ✅ Decorador @CurrentUser
-- ✅ Documentación Swagger automática
-- ✅ Versionado de API (v1)
-- ✅ Validación de DTOs
-- ✅ Variables de entorno
-- ✅ Docker ready
+<p align="center">
+	<em>Construido con las siguientes tecnologías:</em>
+</p>
 
-## 🏗️ Estructura del Proyecto
+<p align="center">
+	<img src="https://img.shields.io/badge/NestJS-E0234E.svg?style=social&logo=nestjs&logoColor=white" />
+	<img src="https://img.shields.io/badge/Prisma-2D3748.svg?style=social&logo=prisma&logoColor=white" />
+	<img src="https://img.shields.io/badge/PostgreSQL-4169E1.svg?style=social&logo=postgresql&logoColor=white" />
+	<img src="https://img.shields.io/badge/Docker-2496ED.svg?style=social&logo=docker&logoColor=white" />
+	<img src="https://img.shields.io/badge/Node.js-339933.svg?style=social&logo=node.js&logoColor=white" />
+</p>
 
-```
-farmlink-backend/
-├── src/
-│   ├── config/              # Configuraciones
-│   ├── common/              # Recursos compartidos
-│   │   ├── decorators/      # Decoradores personalizados
-│   │   └── guards/          # Guards de autenticación
-│   ├── modules/
-│   │   ├── auth/            # Módulo de autenticación
-│   │   ├── users/           # Módulo de usuarios
-│   │   └── tenants/         # Módulo de tenants
-│   ├── prisma/              # Servicio de Prisma
-│   ├── app.module.ts
-│   └── main.ts
-├── prisma/
-│   └── schema.prisma        # Esquema de base de datos
+---
+
+## 🔗 Tabla de Contenidos
+
+- [📍 Descripción General](#-descripción-general)
+- [🏗 Arquitectura](#-arquitectura)
+- [👾 Características](#-características)
+- [📂 Estructura del Repositorio](#-estructura-del-repositorio)
+- [🧩 Módulos del Sistema](#-módulos-del-sistema)
+- [🚀 Primeros Pasos](#-primeros-pasos)
+    - [🔖 Prerrequisitos](#-prerrequisitos)
+    - [📦 Instalación](#-instalación)
+    - [🐳 Ejecución con Docker](#-ejecución-con-docker)
+    - [📡 Endpoints](#-endpoints)
+- [🔐 Seguridad](#-seguridad)
+- [📱 Arquitectura Móvil](#-arquitectura-móvil)
+- [🎓 Proyecto Académico](#-proyecto-académico)
+- [🎗 Licencia](#-licencia)
+
+
+
+## 📍 Descripción General
+
+**FarmLink** es una plataforma digital multitenant diseñada para optimizar la gestión integral de explotaciones ganaderas.
+
+El sistema permite administrar:
+
+- Hato ganadero
+- Salud animal
+- Nutrición
+- Reproducción
+- Potreros
+- Finanzas
+- Usuarios y roles
+- Reportes estratégicos
+
+Está diseñado bajo una arquitectura escalable en la nube, orientada al contexto rural colombiano y alineada con estándares de trazabilidad y control productivo.
+
+---
+
+## 🏗 Arquitectura
+
+Arquitectura basada en:
+
+- Backend API REST con **NestJS**
+- ORM moderno con **Prisma**
+- Base de datos **PostgreSQL 16**
+- Contenedores **Docker**
+- Autenticación con **JWT**
+- Arquitectura modular y escalable
+- Soporte **multitenant**
+
+### Flujo Arquitectónico
+
+Cliente (Web / Móvil)  
+⬇  
+API REST (NestJS)  
+⬇  
+Prisma ORM  
+⬇  
+PostgreSQL  
+
+---
+
+## 👾 Características
+
+- 🔐 Autenticación y autorización con JWT
+- 🏢 Soporte Multitenant (múltiples fincas/empresas)
+- 👥 Gestión de usuarios y roles
+- 🐄 Gestión de animales
+- 💉 Registro de eventos de salud
+- 🌱 Control de nutrición
+- 📊 Reportes y métricas productivas
+- 🐳 Entorno dockerizado profesional
+- 📦 Versionado de API (`/api/v1`)
+- 📈 Arquitectura preparada para crecimiento
+
+---
+
+## 📂 Estructura del Repositorio
+
+```bash
+plataforma-ganadera-multitenant/
+│
 ├── docker-compose.yml
 ├── Dockerfile
-└── package.json
-```
-
-## 🐳 Inicio Rápido con Docker
-
-### Prerrequisitos
-- Docker
-- Docker Compose
-
-### Levantar el proyecto
-
-```bash
-# Clonar el repositorio (si aplica)
-cd farmlink-backend
-
-# OPCIÓN 1: Usando el script de setup (Recomendado)
-chmod +x setup.sh
-./setup.sh
-
-# OPCIÓN 2: Manual
-# Construir y levantar los servicios
-docker compose up --build
-
-# Para ejecutar en segundo plano
-docker compose up -d --build
-```
-
-**Nota**: 
-- El Dockerfile está optimizado para funcionar sin package-lock.json, usando `npm install` en su lugar.
-- PostgreSQL usa el puerto **5433** en el host (para evitar conflictos con instalaciones locales), pero **5432** internamente en Docker.
-
-La API estará disponible en:
-- **API**: http://localhost:3000/api/v1
-- **Swagger**: http://localhost:3000/api/docs
-- **PostgreSQL**: localhost:5433 (desde tu máquina)
-- **Health Check**: http://localhost:3000/api/v1/auth/login (endpoint público)
-
-### Comandos útiles de Docker
-
-```bash
-# Ver logs
-docker compose logs -f backend
-
-# Detener servicios
-docker compose down
-
-# Detener y eliminar volúmenes
-docker compose down -v
-
-# Reconstruir solo el backend
-docker compose up --build backend
-```
-
-## 💻 Desarrollo Local (sin Docker)
-
-### Prerrequisitos
-- Node.js 20+
-- PostgreSQL 16
-- npm o yarn
-
-### Instalación
-
-```bash
-# Instalar dependencias
-npm install
-
-# Configurar variables de entorno
-cp .env.example .env
-# Editar .env con tus valores
-
-# Generar cliente de Prisma
-npm run prisma:generate
-
-# Ejecutar migraciones
-npm run prisma:migrate
-
-# Iniciar en modo desarrollo
-npm run start:dev
-```
-
-## 🗄️ Base de Datos
-
-### Modelos
-
-#### Tenant
-- Multi-tenancy support
-- Soft delete
-- Relación 1:N con Users
-
-#### User
-- Autenticación JWT
-- Roles: SUPER_ADMIN, ADMIN, USER
-- Soft delete
-- Relación N:1 con Tenant
-
-### Migraciones de Prisma
-
-```bash
-# Crear una nueva migración
-npx prisma migrate dev --name nombre_migracion
-
-# Aplicar migraciones en producción
-npx prisma migrate deploy
-
-# Abrir Prisma Studio
-npm run prisma:studio
-```
-
-## 🔐 Autenticación
-
-El sistema utiliza JWT con dos tipos de tokens:
-
-- **Access Token**: Expira en 15 minutos
-- **Refresh Token**: Expira en 7 días
-
-### Endpoints de Autenticación
-
-```bash
-POST /api/v1/auth/register    # Registrar usuario
-POST /api/v1/auth/login       # Iniciar sesión
-POST /api/v1/auth/refresh     # Refrescar token
-POST /api/v1/auth/logout      # Cerrar sesión
-```
-
-### Ejemplo de uso
-
-```bash
-# Registro
-curl -X POST http://localhost:3000/api/v1/auth/register \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "user@example.com",
-    "password": "Password123!",
-    "firstName": "John",
-    "lastName": "Doe",
-    "tenantId": "uuid-del-tenant"
-  }'
-
-# Login
-curl -X POST http://localhost:3000/api/v1/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "user@example.com",
-    "password": "Password123!"
-  }'
-
-# Usar el token
-curl -X GET http://localhost:3000/api/v1/users \
-  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
-```
-
-## 📚 Documentación API
-
-La documentación completa de la API está disponible en Swagger:
-
-**URL**: http://localhost:3000/api/docs
-
-### Rutas Importantes
-
-```
-BASE_URL: http://localhost:3000
-
-├── /api/docs                    → Documentación Swagger
-├── /api/v1/                     → Base de la API v1
+├── package.json
+├── prisma/
+│   ├── schema.prisma
+│   └── migrations/
+├── src/
+│   ├── main.ts
+│   ├── app.module.ts
 │   ├── auth/
-│   │   ├── POST /register       → Registrar usuario
-│   │   ├── POST /login          → Iniciar sesión
-│   │   ├── POST /refresh        → Refrescar token
-│   │   └── POST /logout         → Cerrar sesión (requiere auth)
 │   ├── users/
-│   │   ├── GET    /             → Listar usuarios (requiere auth)
-│   │   ├── POST   /             → Crear usuario (requiere auth)
-│   │   ├── GET    /:id          → Obtener usuario (requiere auth)
-│   │   ├── PATCH  /:id          → Actualizar usuario (requiere auth)
-│   │   └── DELETE /:id          → Eliminar usuario (requiere auth)
-│   └── tenants/
-│       ├── GET    /             → Listar tenants (requiere auth)
-│       ├── POST   /             → Crear tenant (requiere auth)
-│       ├── GET    /:id          → Obtener tenant (requiere auth)
-│       ├── PATCH  /:id          → Actualizar tenant (requiere auth)
-│       └── DELETE /:id          → Eliminar tenant (requiere auth)
-```
+│   ├── tenants/
+│   ├── prisma/
+│   └── common/
+└── README.md
+````
 
-Swagger incluye:
-- Todos los endpoints
-- Esquemas de request/response
-- Autenticación Bearer
-- Prueba directa de endpoints
+---
 
-## 🛡️ Seguridad
+## 🧩 Módulos del Sistema
 
-- ✅ Hashing de contraseñas con bcrypt
-- ✅ JWT para autenticación stateless
-- ✅ Guard global para proteger rutas
-- ✅ Refresh tokens con rotación
-- ✅ Validación de DTOs
-- ✅ CORS habilitado
+### 🔐 Auth Module
 
-## 🔧 Variables de Entorno
+* Registro de usuarios
+* Login
+* Refresh Token
+* Logout
+* Protección con JWT
 
-```env
-# Application
-PORT=3000
-NODE_ENV=development
-API_VERSION=v1
+### 👤 Users Module
 
-# Database
-DATABASE_URL=postgresql://postgres:postgres@db:5432/farmlink
+* Crear usuario
+* Listar usuarios
+* Actualizar usuario
+* Eliminar usuario
 
-# JWT
-JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
-JWT_REFRESH_SECRET=your-super-secret-refresh-jwt-key-change-this-in-production
-JWT_EXPIRATION=15m
-JWT_REFRESH_EXPIRATION=7d
+### 🏢 Tenants Module
 
-# Swagger
-SWAGGER_ENABLED=true
-SWAGGER_PATH=api/docs
-```
+* Crear empresa/finca
+* Gestión por tenant
+* Aislamiento lógico de datos
 
-## 📦 Scripts Disponibles
+### 🗄 Prisma Module
+
+* Conexión a base de datos
+* Gestión de migraciones
+* Cliente ORM
+
+---
+
+## 🚀 Primeros Pasos
+
+### 🔖 Prerrequisitos
+
+* Node.js ≥ 20
+* Docker y Docker Compose
+* Git
+* Linux / macOS / Windows
+
+---
+
+### 📦 Instalación
+
+Clonar repositorio:
 
 ```bash
-npm run build              # Compilar proyecto
-npm run start              # Iniciar aplicación
-npm run start:dev          # Modo desarrollo con hot-reload
-npm run start:prod         # Modo producción
-npm run lint               # Ejecutar ESLint
-npm run format             # Formatear código
-npm run prisma:generate    # Generar cliente Prisma
-npm run prisma:migrate     # Ejecutar migraciones
-npm run prisma:studio      # Abrir Prisma Studio
+git clone https://github.com/ISCOUTB/plataforma-ganadera-multitenant.git
+cd plataforma-ganadera-multitenant
 ```
 
-## 🚀 Próximos Pasos
+Instalar dependencias:
 
-Esta es la base estructural del backend. Para agregar funcionalidad de negocio:
+```bash
+npm install
+```
 
-1. Crear nuevos módulos en `src/modules/`
-2. Definir modelos en `prisma/schema.prisma`
-3. Ejecutar migraciones
-4. Implementar servicios, controladores y DTOs
-5. Documentar con decoradores de Swagger
+---
 
-## 📝 Notas de Producción
+### 🐳 Ejecución con Docker
 
-- Cambiar `JWT_SECRET` y `JWT_REFRESH_SECRET` por valores seguros
-- Configurar `NODE_ENV=production`
-- Implementar rate limiting
-- Configurar logs apropiados
-- Usar variables de entorno secretas
-- Configurar CORS apropiadamente
-- Implementar monitoreo y alertas
+```bash
+docker compose up --build
+```
 
-## 🤝 Contribución
+La aplicación estará disponible en:
 
-1. Fork el proyecto
-2. Crea una rama feature (`git checkout -b feature/nueva-caracteristica`)
-3. Commit tus cambios (`git commit -m 'Agregar nueva característica'`)
-4. Push a la rama (`git push origin feature/nueva-caracteristica`)
-5. Abre un Pull Request
+```
+http://localhost:3000/api/v1
+```
 
-## 📄 Licencia
+---
 
-MIT
+### 📡 Endpoints Principales
+
+#### Auth
+
+```
+POST /api/v1/auth/register
+POST /api/v1/auth/login
+POST /api/v1/auth/refresh
+POST /api/v1/auth/logout
+```
+
+#### Users
+
+```
+GET /api/v1/users
+POST /api/v1/users
+PATCH /api/v1/users/:id
+DELETE /api/v1/users/:id
+```
+
+#### Tenants
+
+```
+GET /api/v1/tenants
+POST /api/v1/tenants
+GET /api/v1/tenants/:id
+PATCH /api/v1/tenants/:id
+DELETE /api/v1/tenants/:id
+```
+
+---
+
+## 🔐 Seguridad
+
+* JWT Access & Refresh Tokens
+* Encriptación de contraseñas con bcrypt
+* Validación de DTOs
+* Aislamiento por tenant
+* Variables de entorno protegidas
+* Contenedores seguros
+
+---
+
+## 📱 Arquitectura Móvil
+
+El backend está diseñado para soportar:
+
+* Aplicación móvil Flutter
+* Cliente Web (React / Next.js)
+* Comunicación vía REST API
+* Versionado para futuras actualizaciones
+* Arquitectura escalable en la nube
+
+---
+
+## 🎓 Proyecto Académico
+
+Este sistema forma parte del proyecto universitario:
+
+**Proyecto de Ingeniería – Plataforma Multitenant Ganadera**
+
+Objetivos del proyecto:
+
+* Aplicar arquitectura limpia y modular
+* Implementar un sistema escalable real
+* Resolver problemática productiva rural
+* Integrar backend profesional dockerizado
+* Diseñar arquitectura preparada para entorno móvil
+
+---
+
+## 🎗 Licencia
+
+Este proyecto está protegido bajo la licencia MIT.
+
+---
+
+```
+
+Si quieres, puedo ahora:
+
+- Agregarte un diagrama de arquitectura en Markdown  
+- Hacer versión enterprise más visual  
+- Crear README separado para backend y frontend móvil  
+- Añadir sección de despliegue en la nube (AWS / Render / Railway)  
+
+Tú decides el siguiente nivel 🚀
+```
+
