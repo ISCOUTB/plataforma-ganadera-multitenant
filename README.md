@@ -278,15 +278,3 @@ Este proyecto está protegido bajo la licencia MIT.
 
 ---
 
-```
-
-Si quieres, puedo ahora:
-
-- Agregarte un diagrama de arquitectura en Markdown  
-- Hacer versión enterprise más visual  
-- Crear README separado para backend y frontend móvil  
-- Añadir sección de despliegue en la nube (AWS / Render / Railway)  
-
-Tú decides el siguiente nivel 🚀
-```
-
