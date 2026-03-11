@@ -20,8 +20,9 @@
 <p align="center">
 	<img src="https://img.shields.io/badge/NestJS-E0234E.svg?style=social&logo=nestjs&logoColor=white" />
 	<img src="https://img.shields.io/badge/Prisma-2D3748.svg?style=social&logo=prisma&logoColor=white" />
-	<img src="https://img.shields.io/badge/PostgreSQL-4169E1.svg?style=social&logo=postgresql&logoColor=white" />
-	<img src="https://img.shields.io/badge/Docker-2496ED.svg?style=social&logo=docker&logoColor=white" />
+	<img src="https://img.shields.io/badge/TypeScript-3178C6.svg?style=social&logo=typescript&logoColor=white" />
+	<img src="https://img.shields.io/badge/Flutter-02569B.svg?style=social&logo=flutter&logoColor=white" />
+	<img src="https://img.shields.io/badge/Dart-0175C2.svg?style=social&logo=dart&logoColor=white" />
 	<img src="https://img.shields.io/badge/Node.js-339933.svg?style=social&logo=node.js&logoColor=white" />
 </p>
 
@@ -34,73 +35,72 @@
 - [👾 Características](#-características)
 - [📂 Estructura del Repositorio](#-estructura-del-repositorio)
 - [🧩 Módulos del Sistema](#-módulos-del-sistema)
+- [📱 Frontend Móvil y Multiplataforma](#-frontend-móvil-y-multiplataforma)
 - [🚀 Primeros Pasos](#-primeros-pasos)
-    - [🔖 Prerrequisitos](#-prerrequisitos)
-    - [📦 Instalación](#-instalación)
-    - [🐳 Ejecución con Docker](#-ejecución-con-docker)
-    - [📡 Endpoints](#-endpoints)
-- [🔐 Seguridad](#-seguridad)
-- [📱 Arquitectura Móvil](#-arquitectura-móvil)
+  - [🔖 Prerrequisitos](#-prerrequisitos)
+  - [📦 Instalación](#-instalación)
+  - [⚙ Ejecución del Backend](#-ejecución-del-backend)
+  - [📲 Ejecución del Frontend](#-ejecución-del-frontend)
 - [🎓 Proyecto Académico](#-proyecto-académico)
 - [🎗 Licencia](#-licencia)
 
-
+---
 
 ## 📍 Descripción General
 
-**FarmLink** es una plataforma digital multitenant diseñada para optimizar la gestión integral de explotaciones ganaderas.
+**FarmLink** es una plataforma digital orientada a la gestión ganadera, organizada como un proyecto multitenant con separación entre backend y frontend.
 
-El sistema permite administrar:
+El sistema está diseñado para apoyar procesos como:
 
-- Hato ganadero
-- Salud animal
-- Nutrición
-- Reproducción
-- Potreros
-- Finanzas
-- Usuarios y roles
-- Reportes estratégicos
+- Gestión de animales
+- Administración de fincas
+- Control de potreros
+- Registro de salud animal
+- Seguimiento de reproducción
+- Gestión de alimentos
+- Control financiero
+- Administración de usuarios
 
-Está diseñado bajo una arquitectura escalable en la nube, orientada al contexto rural colombiano y alineada con estándares de trazabilidad y control productivo.
+La solución está dividida en una API backend desarrollada con NestJS y una aplicación frontend desarrollada en Flutter.
 
 ---
 
 ## 🏗 Arquitectura
 
-Arquitectura basada en:
+La arquitectura actual del proyecto está organizada en dos grandes capas:
 
-- Backend API REST con **NestJS**
-- ORM moderno con **Prisma**
-- Base de datos **PostgreSQL 16**
-- Contenedores **Docker**
-- Autenticación con **JWT**
-- Arquitectura modular y escalable
-- Soporte **multitenant**
+- **Backend** con NestJS, TypeScript y Prisma
+- **Frontend** con Flutter y Dart
+- Estructura modular por dominios funcionales
+- Separación entre lógica de negocio, servicios y entidades
+- Base preparada para crecimiento y mantenimiento
 
 ### Flujo Arquitectónico
 
-Cliente (Web / Móvil)  
+Cliente Flutter  
 ⬇  
-API REST (NestJS)  
+API Backend (NestJS)  
+⬇  
+Servicios y módulos  
 ⬇  
 Prisma ORM  
 ⬇  
-PostgreSQL  
+Base de datos  
 
 ---
 
 ## 👾 Características
 
-- 🔐 Autenticación y autorización con JWT
-- 🏢 Soporte Multitenant (múltiples fincas/empresas)
-- 👥 Gestión de usuarios y roles
-- 🐄 Gestión de animales
-- 💉 Registro de eventos de salud
-- 🌱 Control de nutrición
-- 📊 Reportes y métricas productivas
-- 🐳 Entorno dockerizado profesional
-- 📦 Versionado de API (`/api/v1`)
-- 📈 Arquitectura preparada para crecimiento
+- 🐄 Gestión modular del dominio ganadero
+- 🏡 Administración de fincas y potreros
+- 💉 Registro de salud animal
+- 🌱 Control de alimentos
+- 🔬 Seguimiento de reproducción
+- 💰 Gestión financiera
+- 👤 Administración de usuarios
+- 📱 Frontend multiplataforma con Flutter
+- 🧩 Organización por módulos y entidades
+- 📦 Repositorio dividido en Backend y Frontend
 
 ---
 
@@ -109,53 +109,190 @@ PostgreSQL
 ```bash
 plataforma-ganadera-multitenant/
 │
-├── docker-compose.yml
-├── Dockerfile
-├── package.json
-├── prisma/
-│   ├── schema.prisma
-│   └── migrations/
-├── src/
-│   ├── main.ts
-│   ├── app.module.ts
-│   ├── auth/
-│   ├── users/
-│   ├── tenants/
+├── Backend/
 │   ├── prisma/
-│   └── common/
+│   │   ├── schema.prisma
+│   │   └── schema.prisma.bak
+│   ├── src/
+│   │   ├── alimentos/
+│   │   │   ├── entities/
+│   │   │   │   └── alimento.entity.ts
+│   │   │   ├── alimentos.controller.ts
+│   │   │   ├── alimentos.module.ts
+│   │   │   └── alimentos.service.ts
+│   │   ├── animales/
+│   │   │   ├── entities/
+│   │   │   │   └── animal.entity.ts
+│   │   │   ├── animales.module.ts
+│   │   │   └── animales.service.ts
+│   │   ├── bovino-alimento/
+│   │   │   └── entities/
+│   │   │       └── bovino-alimento.entity.ts
+│   │   ├── finanzas/
+│   │   │   ├── entities/
+│   │   │   │   └── finanza.entity.ts
+│   │   │   ├── finanzas.controller.ts
+│   │   │   ├── finanzas.module.ts
+│   │   │   └── finanzas.service.ts
+│   │   ├── fincas/
+│   │   │   ├── entities/
+│   │   │   │   └── finca.entity.ts
+│   │   │   ├── fincas.module.ts
+│   │   │   └── fincas.service.ts
+│   │   ├── potreros/
+│   │   │   ├── entities/
+│   │   │   │   └── potrero.entity.ts
+│   │   │   ├── potreros.module.ts
+│   │   │   └── potreros.service.ts
+│   │   ├── reproduccion/
+│   │   │   ├── entities/
+│   │   │   │   └── reproduccion.entity.ts
+│   │   │   ├── reproduccion.controller.ts
+│   │   │   ├── reproduccion.module.ts
+│   │   │   └── reproduccion.service.ts
+│   │   ├── salud/
+│   │   │   ├── entities/
+│   │   │   │   └── salud.entity.ts
+│   │   │   ├── salud.controller.ts
+│   │   │   ├── salud.module.ts
+│   │   │   └── salud.service.ts
+│   │   ├── usuarios/
+│   │   │   ├── entities/
+│   │   │   │   └── usuario.entity.ts
+│   │   │   ├── usuarios.controller.ts
+│   │   │   ├── usuarios.module.ts
+│   │   │   └── usuarios.service.ts
+│   │   ├── app.controller.spec.ts
+│   │   ├── app.controller.ts
+│   │   ├── app.module.ts
+│   │   ├── app.service.ts
+│   │   └── main.ts
+│   ├── test/
+│   │   ├── app.e2e-spec.ts
+│   │   └── jest-e2e.json
+│   ├── .gitignore
+│   ├── .prettierrc
+│   ├── eslint.config.mjs
+│   ├── nest-cli.json
+│   ├── package.json
+│   ├── package-lock.json
+│   ├── tsconfig.build.json
+│   ├── tsconfig.json
+│   └── README.md
+│
+├── Frontend/
+│   ├── assets/
+│   │   ├── Logo.png
+│   │   ├── about_us.jpeg
+│   │   └── farm_hero.jpeg
+│   ├── lib/
+│   │   ├── components/
+│   │   │   ├── input_field.dart
+│   │   │   └── primary_button.dart
+│   │   ├── screens/
+│   │   │   ├── Dashboard_screen.dart
+│   │   │   ├── Landing_screen.dart
+│   │   │   ├── Login_screen.dart
+│   │   │   └── Registro_screen.dart
+│   │   ├── services/
+│   │   │   └── api_service.dart
+│   │   ├── theme/
+│   │   │   ├── Colors.dart
+│   │   │   ├── Theme.dart
+│   │   │   └── colors.dart
+│   │   └── main.dart
+│   ├── android/
+│   ├── ios/
+│   ├── linux/
+│   ├── macos/
+│   ├── web/
+│   ├── windows/
+│   ├── test/
+│   │   └── widget_test.dart
+│   ├── .gitignore
+│   ├── .metadata
+│   ├── analysis_options.yaml
+│   ├── pubspec.yaml
+│   ├── pubspec.lock
+│   └── README.md
+│
 └── README.md
-````
+```
 
 ---
 
 ## 🧩 Módulos del Sistema
 
-### 🔐 Auth Module
+### 🌱 Alimentos Module
 
-* Registro de usuarios
-* Login
-* Refresh Token
-* Logout
-* Protección con JWT
+- Gestión de alimentos y recursos nutricionales
+- Controlador, servicio y módulo independientes
+- Entidad principal: `alimento.entity.ts`
 
-### 👤 Users Module
+### 🐄 Animales Module
 
-* Crear usuario
-* Listar usuarios
-* Actualizar usuario
-* Eliminar usuario
+- Administración del inventario animal
+- Servicios del dominio ganadero
+- Entidad principal: `animal.entity.ts`
 
-### 🏢 Tenants Module
+### 🔗 Bovino-Alimento Module
 
-* Crear empresa/finca
-* Gestión por tenant
-* Aislamiento lógico de datos
+- Relación entre animales y alimentación
+- Organización de asociaciones del dominio
+- Entidad principal: `bovino-alimento.entity.ts`
 
-### 🗄 Prisma Module
+### 💰 Finanzas Module
 
-* Conexión a base de datos
-* Gestión de migraciones
-* Cliente ORM
+- Registro y control financiero
+- Controlador, servicio y módulo propios
+- Entidad principal: `finanza.entity.ts`
+
+### 🏡 Fincas Module
+
+- Gestión de fincas dentro de la plataforma
+- Organización de recursos productivos
+- Entidad principal: `finca.entity.ts`
+
+### 🌿 Potreros Module
+
+- Administración de potreros
+- Gestión de espacios de producción
+- Entidad principal: `potrero.entity.ts`
+
+### ❤️ Salud Module
+
+- Registro de eventos y controles de salud
+- Controlador, servicio y módulo dedicados
+- Entidad principal: `salud.entity.ts`
+
+### 🔬 Reproducción Module
+
+- Seguimiento de procesos reproductivos
+- Organización del módulo con controlador y servicio
+- Entidad principal: `reproduccion.entity.ts`
+
+### 👤 Usuarios Module
+
+- Gestión de usuarios del sistema
+- Controlador, servicio y módulo asociados
+- Entidad principal: `usuario.entity.ts`
+
+---
+
+## 📱 Frontend Móvil y Multiplataforma
+
+El frontend de **FarmLink** está desarrollado con Flutter y organizado para ejecutarse en múltiples plataformas.
+
+Actualmente el proyecto incluye estructura para:
+
+- Android
+- iOS
+- Web
+- Linux
+- macOS
+- Windows
+
+La carpeta `lib/` concentra la lógica principal de la aplicación mediante componentes reutilizables, pantallas, servicios de consumo de API y configuración visual del sistema.
 
 ---
 
@@ -163,10 +300,13 @@ plataforma-ganadera-multitenant/
 
 ### 🔖 Prerrequisitos
 
-* Node.js ≥ 20
-* Docker y Docker Compose
-* Git
-* Linux / macOS / Windows
+Para trabajar con el proyecto necesitas:
+
+- Git
+- Node.js y npm
+- Flutter SDK
+- Dart SDK
+- Un editor como VS Code o Android Studio
 
 ---
 
@@ -179,102 +319,63 @@ git clone https://github.com/ISCOUTB/plataforma-ganadera-multitenant.git
 cd plataforma-ganadera-multitenant
 ```
 
-Instalar dependencias:
+---
+
+### ⚙ Ejecución del Backend
+
+Entrar al backend e instalar dependencias:
 
 ```bash
+cd Backend
 npm install
 ```
 
----
-
-### 🐳 Ejecución con Docker
+Generar cliente de Prisma:
 
 ```bash
-docker compose up --build
+npx prisma generate
 ```
 
-La aplicación estará disponible en:
+Ejecutar en desarrollo:
 
-```
-http://localhost:3000/api/v1
-```
-
----
-
-### 📡 Endpoints Principales
-
-#### Auth
-
-```
-POST /api/v1/auth/register
-POST /api/v1/auth/login
-POST /api/v1/auth/refresh
-POST /api/v1/auth/logout
-```
-
-#### Users
-
-```
-GET /api/v1/users
-POST /api/v1/users
-PATCH /api/v1/users/:id
-DELETE /api/v1/users/:id
-```
-
-#### Tenants
-
-```
-GET /api/v1/tenants
-POST /api/v1/tenants
-GET /api/v1/tenants/:id
-PATCH /api/v1/tenants/:id
-DELETE /api/v1/tenants/:id
+```bash
+npm run start:dev
 ```
 
 ---
 
-## 🔐 Seguridad
+### 📲 Ejecución del Frontend
 
-* JWT Access & Refresh Tokens
-* Encriptación de contraseñas con bcrypt
-* Validación de DTOs
-* Aislamiento por tenant
-* Variables de entorno protegidas
-* Contenedores seguros
+Entrar al frontend e instalar dependencias:
 
----
+```bash
+cd Frontend
+flutter pub get
+```
 
-## 📱 Arquitectura Móvil
+Ejecutar la aplicación:
 
-El backend está diseñado para soportar:
-
-* Aplicación móvil Flutter
-* Cliente Web (React / Next.js)
-* Comunicación vía REST API
-* Versionado para futuras actualizaciones
-* Arquitectura escalable en la nube
+```bash
+flutter run
+```
 
 ---
 
 ## 🎓 Proyecto Académico
 
-Este sistema forma parte del proyecto universitario:
-
-**Proyecto de Ingeniería – Plataforma Multitenant Ganadera**
+Este sistema forma parte de un proyecto académico orientado al desarrollo de una plataforma tecnológica para la gestión ganadera.
 
 Objetivos del proyecto:
 
-* Aplicar arquitectura limpia y modular
-* Implementar un sistema escalable real
-* Resolver problemática productiva rural
-* Integrar backend profesional dockerizado
-* Diseñar arquitectura preparada para entorno móvil
+- Aplicar arquitectura modular
+- Integrar backend y frontend en una sola solución
+- Resolver necesidades del contexto productivo ganadero
+- Organizar el sistema para evolución futura
+- Fortalecer el desarrollo de software aplicado al sector rural
 
 ---
 
 ## 🎗 Licencia
 
-Este proyecto está protegido bajo la licencia MIT.
-
----
+Este proyecto puede licenciarse bajo la licencia MIT si así lo define el equipo responsable del repositorio.
 
