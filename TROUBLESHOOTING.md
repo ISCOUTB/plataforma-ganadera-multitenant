@@ -1,3 +1,8 @@
+> **ATENCIÓN (Fase 0 — saneamiento):** Este documento describe problemas de una arquitectura
+> planificada (Prisma + Docker multi-servicio) que **NO corresponde al código actual**. El
+> backend real es NestJS con TypeORM. Para el estado real del proyecto ver `CLAUDE.md` y
+> `PLAN_DE_TRABAJO.md`.
+
 # 🔧 Solución de Problemas
 
 ## Error: "npm ci" can only install with an existing package-lock.json

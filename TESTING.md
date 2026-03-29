@@ -1,3 +1,8 @@
+> **ATENCIÓN (Fase 0 — saneamiento):** Este documento describe una arquitectura planificada
+> (Prisma + JWT + rutas `/api/v1/`) que **NO corresponde al código actual**. El backend real
+> usa TypeORM con rutas en español (`/usuarios/login`, `/alimentos`). Ver `CLAUDE.md` y
+> `PLAN_DE_TRABAJO.md` para el estado real del proyecto.
+
 # 🧪 Guía de Pruebas - FarmLink API
 
 Esta guía te ayudará a probar todos los endpoints de la API paso a paso.

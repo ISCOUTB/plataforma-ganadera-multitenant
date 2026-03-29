@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+// Fase 0: eliminado import de flutter/services.dart — no se usaba en este archivo
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});

@@ -1,14 +1,17 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn } from 'typeorm';
+import { Entity, Column } from 'typeorm';
+import { BaseEntity } from '../../common/entities/base.entity';
 
+// Salud extiende BaseEntity (Grupo A):
+//   - PK: id (number, auto-gen) — sustituye a pk_id_salud
+//   - Auditoría + tenant: tenant_id, created_at, updated_at, deleted_at, created_by, updated_by
+//   - creado_en ELIMINADO (reemplazado por created_at de BaseEntity)
+// TODO (Fase 4): agregar @ManyToOne(() => Animal) para ligar cada registro
+// de salud al animal correspondiente.
 @Entity('salud')
-export class Salud {
-  @PrimaryGeneratedColumn()
-  pk_id_salud: number;
-
-  @Column({ 
-    type: 'enum', 
+export class Salud extends BaseEntity {
+  @Column({
+    type: 'enum',
     enum: ['vacunacion', 'vitaminas', 'desparasitacion', 'enfermedad'],
-    
   })
   tipo_intervencion: string;
 
@@ -29,7 +32,4 @@ export class Salud {
 
   @Column('decimal', { nullable: true })
   costo: number;
-
-  @CreateDateColumn()
-  creado_en: Date;
 }

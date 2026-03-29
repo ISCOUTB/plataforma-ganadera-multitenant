@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import '../theme/Colors.dart';
+// Fase 0: import corregido a minúscula para compatibilidad con Linux/CI (case-sensitive)
+import '../theme/colors.dart';
 
 class PrimaryButton extends StatelessWidget {
   final String text;

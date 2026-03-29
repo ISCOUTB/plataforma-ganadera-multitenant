@@ -1,8 +1,58 @@
-__MACOSX/
+# =============================================================================
+# .gitignore — FarmLink
+# Actualizado en Fase 0 (saneamiento): se consolidaron duplicados y se agregaron
+# exclusiones esenciales que faltaban (node_modules, .env, dist, etc.)
+# =============================================================================
+
+# --- Dependencias ---
+node_modules/
+.pub-cache/
+.dart_tool/
+
+# --- Variables de entorno (NUNCA versionar secretos) ---
+.env
+.env.*
+!.env.example
+
+# --- Compilados y builds ---
+dist/
+build/
+coverage/
+
+# --- Logs ---
+*.log
+npm-debug.log*
+yarn-debug.log*
+
+# --- macOS ---
 .DS_Store
 **/.DS_Store
 *._.DS_Store
 __MACOSX/
-.DS_Store
-**/.DS_Store
+
+# --- IDEs ---
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# --- Claude Code (herramienta de desarrollo local) ---
 .claude/
+
+# --- Flutter específico ---
+*.g.dart
+*.freezed.dart
+
+# --- Fases y planificación (Claude / desarrollo interno) ---
+fases/
+Fases/
+prompts/
+*.prompt.md
+PLAN_DE_TRABAJO_LOCAL.md
+
+# --- Builds específicos ---
+Backend/dist/
+frontend-react/node_modules/
+frontend-react/dist/

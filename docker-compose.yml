@@ -1,3 +1,12 @@
+# docker-compose.yml — FarmLink
+#
+# NOTA (Fase 0 - saneamiento): Se eliminó el servicio 'backend' porque referenciaba
+# un Dockerfile inexistente y ejecutaba 'npx prisma migrate deploy', siendo que el
+# backend real usa TypeORM (no Prisma). Solo se conserva el servicio de BD.
+#
+# Para desarrollo del backend: cd Backend && npm run start:dev
+# El Dockerfile para producción se creará en Fase 8 (DevOps).
+
 services:
   db:
     image: postgres:16-alpine
@@ -8,7 +17,8 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: farmlink
     ports:
-      - "5433:5432"  # Usando puerto 5433 en host para evitar conflicto
+      # Puerto 5433 en host para evitar conflicto con PostgreSQL local (5432)
+      - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
@@ -18,30 +28,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-
-  backend:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: production
-    container_name: farmlink-backend
-    restart: unless-stopped
-    ports:
-      - "3000:3000"
-    environment:
-      PORT: 3000
-      NODE_ENV: production
-      DATABASE_URL: postgresql://postgres:postgres@db:5432/farmlink
-      JWT_SECRET: ${JWT_SECRET:-your-super-secret-jwt-key-change-this-in-production}
-      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-your-super-secret-refresh-jwt-key-change-this-in-production}
-      JWT_EXPIRATION: 15m
-      JWT_REFRESH_EXPIRATION: 7d
-    depends_on:
-      db:
-        condition: service_healthy
-    networks:
-      - farmlink-network
-    command: sh -c "npx prisma migrate deploy && node dist/main"
 
 volumes:
   postgres_data:

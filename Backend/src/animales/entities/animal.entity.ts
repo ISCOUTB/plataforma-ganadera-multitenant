@@ -1,12 +1,14 @@
-import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Entity, Column, ManyToOne } from 'typeorm';
 import { Finca } from '../../fincas/entities/finca.entity';
 import { Potrero } from '../../potreros/entities/potrero.entity';
+import { BaseEntity } from '../../common/entities/base.entity';
 
-@Entity('bovinos')  // Nombre de tabla como en tu esquema
-export class Animal {
-  @PrimaryGeneratedColumn()
-  pk_id_bovino: number;  // Cambiar nombre para coincidir
-
+// Animal extiende BaseEntity (Grupo A):
+//   - PK: id (number, auto-gen) — sustituye a pk_id_bovino
+//   - Auditoría + tenant: tenant_id, created_at, updated_at, deleted_at, created_by, updated_by
+//   - creado_en y actualizado_en ELIMINADOS (reemplazados por created_at/updated_at de BaseEntity)
+@Entity('bovinos')
+export class Animal extends BaseEntity {
   @Column()
   numero_identificacion: string;
 
@@ -44,16 +46,9 @@ export class Animal {
   relacion_genealogica: string;
 
   // Relaciones
-  @ManyToOne(() => Finca, finca => finca.animales)
+  @ManyToOne(() => Finca, (finca) => finca.animales)
   finca: Finca;
 
-  @ManyToOne(() => Potrero, potrero => potrero.animales, { nullable: true })
+  @ManyToOne(() => Potrero, (potrero) => potrero.animales, { nullable: true })
   potrero: Potrero;
-
-  @CreateDateColumn()
-  creado_en: Date;
-
-  @UpdateDateColumn()
-  actualizado_en: Date;
-    reproducciones: any;
 }
