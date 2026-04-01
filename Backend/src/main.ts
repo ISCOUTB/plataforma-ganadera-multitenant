@@ -21,6 +21,10 @@ async function bootstrap() {
   // En producción (Fase 9) configurar una CSP explícita que permita los assets de Swagger.
   app.use((helmet as any).default({ contentSecurityPolicy: false }));
 
+  // Prefijo global /api para todas las rutas.
+  // Swagger queda en /api/docs, endpoints en /api/animales, /api/auth/login, etc.
+  app.setGlobalPrefix('api');
+
   // credentials: true permite que los browsers envíen cookies HTTP-only en
   // peticiones cross-origin (necesario para el flujo cookie-based del refresh token).
   // origin: true refleja el Origin del request → permite cualquier origen en dev.

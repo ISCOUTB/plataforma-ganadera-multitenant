@@ -24,6 +24,10 @@ import { FinanzasModule } from './finanzas/finanzas.module';
 import { UsuariosModule } from './usuarios/usuarios.module';
 import { AuthModule } from './auth/auth.module';
 import { BovinoAlimentoModule } from './bovino-alimento/bovino-alimento.module';
+import { MovimientoAnimal } from './movimientos/entities/movimiento-animal.entity';
+import { MovimientosModule } from './movimientos/movimientos.module';
+import { DashboardModule } from './dashboard/dashboard.module';
+import { AlertasModule } from './alertas/alertas.module';
 
 @Module({
   imports: [
@@ -47,7 +51,8 @@ import { BovinoAlimentoModule } from './bovino-alimento/bovino-alimento.module';
         entities: [
           Usuario, Finca, Animal, Potrero,
           Alimento, Salud, Reproduccion, Finanza,
-          BovinoAlimento
+          BovinoAlimento,
+          MovimientoAnimal
         ],
         // NOTA: synchronize:true aplica cambios de esquema automáticamente al
         // arrancar. Conveniente en desarrollo, peligroso en producción.
@@ -72,6 +77,9 @@ import { BovinoAlimentoModule } from './bovino-alimento/bovino-alimento.module';
     FinanzasModule,
     UsuariosModule,
     BovinoAlimentoModule,
+    MovimientosModule,
+    DashboardModule,
+    AlertasModule,
   ],
   // APP_GUARD registra guards globalmente — se ejecutan en orden de declaración
   // en TODAS las rutas. Las rutas públicas usan @Public() para eximirse.

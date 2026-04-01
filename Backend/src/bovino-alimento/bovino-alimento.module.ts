@@ -1,12 +1,15 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { BovinoAlimento } from './entities/bovino-alimento.entity';
+import { Animal } from '../animales/entities/animal.entity';
+import { Alimento } from '../alimentos/entities/alimento.entity';
+import { BovinoAlimentoService } from './bovino-alimento.service';
+import { BovinoAlimentoController } from './bovino-alimento.controller';
 
-// BovinoAlimentoModule — registra la entidad de unión N:N para que
-// otros módulos puedan inyectar Repository<BovinoAlimento> si lo necesitan.
-// Fase 4 agregará servicio y controller para gestionar raciones de alimento.
 @Module({
-  imports: [TypeOrmModule.forFeature([BovinoAlimento])],
-  exports: [TypeOrmModule],
+  imports: [TypeOrmModule.forFeature([BovinoAlimento, Animal, Alimento])],
+  providers: [BovinoAlimentoService],
+  controllers: [BovinoAlimentoController],
+  exports: [BovinoAlimentoService],
 })
 export class BovinoAlimentoModule {}

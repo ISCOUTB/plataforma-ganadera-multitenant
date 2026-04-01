@@ -1,4 +1,5 @@
 import { Repository, FindOptionsWhere, IsNull, DeepPartial } from 'typeorm';
+import { PaginatedResult } from '../interfaces/paginated-result.interface';
 
 // Interfaz mínima que debe cumplir cualquier entidad para usar BaseRepository.
 // No exige extender BaseEntity, por lo que funciona con:
@@ -36,6 +37,56 @@ export class BaseRepository<T extends TenantAuditableEntity> {
     });
   }
 
+  // Retorna registros paginados, con filtros opcionales y ordenamiento.
+  // extraWhere permite filtros de campo específicos por entidad (ej: { raza: 'Brahman' }).
+  // SEGURIDAD: extraWhere NO puede contener tenant_id ni deleted_at.
+  // Respuesta: { data, total, page, lastPage }
+  async findAllPaginated(
+    tenantId: string,
+    options: {
+      page?: number;
+      limit?: number;
+      sortBy?: string;
+      sortOrder?: 'ASC' | 'DESC';
+    } = {},
+    extraWhere: FindOptionsWhere<T> = {} as FindOptionsWhere<T>,
+  ): Promise<PaginatedResult<T>> {
+    // Defensa: impedir que extraWhere sobreescriba campos protegidos.
+    const forbiddenKeys = ['tenant_id', 'deleted_at'];
+    if (Object.keys(extraWhere).some((k) => forbiddenKeys.includes(k))) {
+      throw new Error('extraWhere cannot override tenant_id or deleted_at');
+    }
+
+    // Defensa: cotas mínimas/máximas independientes de la validación del DTO.
+    const page = Math.max(options.page ?? 1, 1);
+    const limit = Math.min(Math.max(options.limit ?? 10, 1), 100);
+
+    const where = {
+      ...extraWhere,
+      tenant_id: tenantId,
+      deleted_at: IsNull(),
+    } as FindOptionsWhere<T>;
+
+    const findOptions: any = {
+      where,
+      skip: (page - 1) * limit,
+      take: limit,
+    };
+
+    if (options.sortBy) {
+      findOptions.order = { [options.sortBy]: options.sortOrder ?? 'ASC' };
+    }
+
+    const [data, total] = await this.repo.findAndCount(findOptions);
+
+    return {
+      data,
+      total,
+      page,
+      lastPage: Math.ceil(total / limit) || 1,
+    };
+  }
+
   // Busca un registro por su PK + tenant_id.
   // Usa TypeORM metadata para detectar el nombre real de la PK en runtime:
   //   - Grupo A (BaseEntity): propertyName = 'id'
@@ -49,6 +100,23 @@ export class BaseRepository<T extends TenantAuditableEntity> {
         tenant_id: tenantId,
         deleted_at: IsNull(),
       } as FindOptionsWhere<T>,
+    });
+  }
+
+  // Igual que findOneById pero cargando relaciones especificadas.
+  findOneByIdWithRelations(
+    id: number | string,
+    tenantId: string,
+    relations: string[],
+  ): Promise<T | null> {
+    const pkField = this.repo.metadata.primaryColumns[0].propertyName;
+    return this.repo.findOne({
+      where: {
+        [pkField]: id,
+        tenant_id: tenantId,
+        deleted_at: IsNull(),
+      } as FindOptionsWhere<T>,
+      relations,
     });
   }
 

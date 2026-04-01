@@ -1,7 +1,5 @@
 # =============================================================================
 # .gitignore — FarmLink
-# Actualizado en Fase 0 (saneamiento): se consolidaron duplicados y se agregaron
-# exclusiones esenciales que faltaban (node_modules, .env, dist, etc.)
 # =============================================================================
 
 # --- Dependencias ---
@@ -38,14 +36,13 @@ __MACOSX/
 *.njsproj
 *.sln
 
-# --- Claude Code (herramienta de desarrollo local) ---
 .claude/
 
 # --- Flutter específico ---
 *.g.dart
 *.freezed.dart
 
-# --- Fases y planificación (Claude / desarrollo interno) ---
+# --- Fases y planificación ---
 fases/
 Fases/
 prompts/

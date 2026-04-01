@@ -6,6 +6,7 @@ import {
   Delete,
   Body,
   Param,
+  Query,
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
@@ -13,6 +14,7 @@ import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiParam } from '@ne
 import { FincasService } from './fincas.service';
 import { CreateFincaDto } from './dto/create-finca.dto';
 import { UpdateFincaDto } from './dto/update-finca.dto';
+import { FilterFincasDto } from './dto/filter-fincas.dto';
 import { Tenant } from '../common/decorators/tenant.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import type { JwtUserPayload } from '../common/interfaces/request-with-user.interface';
@@ -38,16 +40,35 @@ export class FincasController {
     return this.fincasService.create(dto, tenantId, user.sub);
   }
 
-  // GET /fincas — lista fincas activas del tenant.
-  @ApiOperation({ summary: 'Listar todas las fincas activas del tenant' })
-  @ApiResponse({ status: 200, description: 'Lista de fincas del tenant' })
+  // GET /fincas — lista fincas activas del tenant con paginación y filtros.
+  @ApiOperation({
+    summary: 'Listar fincas del tenant (paginado, con filtros opcionales)',
+  })
+  @ApiResponse({ status: 200, description: 'Lista paginada de fincas: { data, total, page, lastPage }' })
   @Get()
-  findAll(@Tenant() tenantId: string) {
-    return this.fincasService.findAll(tenantId);
+  findAll(@Query() filters: FilterFincasDto, @Tenant() tenantId: string) {
+    return this.fincasService.findAllPaginated(tenantId, filters);
   }
 
-  // GET /fincas/:id — detalle de una finca del tenant.
-  @ApiOperation({ summary: 'Obtener detalle de una finca' })
+  @ApiOperation({ summary: 'Listar animales de una finca' })
+  @ApiParam({ name: 'id', description: 'pk_id_finca', example: 'FINCA001' })
+  @ApiResponse({ status: 200, description: 'Lista de animales de la finca' })
+  @ApiResponse({ status: 404, description: 'Finca no encontrada' })
+  @Get(':id/animales')
+  findAnimales(@Param('id') id: string, @Tenant() tenantId: string) {
+    return this.fincasService.findAnimalesByFinca(id, tenantId);
+  }
+
+  @ApiOperation({ summary: 'Listar potreros de una finca' })
+  @ApiParam({ name: 'id', description: 'pk_id_finca', example: 'FINCA001' })
+  @ApiResponse({ status: 200, description: 'Lista de potreros de la finca' })
+  @ApiResponse({ status: 404, description: 'Finca no encontrada' })
+  @Get(':id/potreros')
+  findPotreros(@Param('id') id: string, @Tenant() tenantId: string) {
+    return this.fincasService.findPotrerosByFinca(id, tenantId);
+  }
+
+  @ApiOperation({ summary: 'Obtener detalle de una finca con relaciones' })
   @ApiParam({ name: 'id', description: 'pk_id_finca (ej: FINCA001)', example: 'FINCA001' })
   @ApiResponse({ status: 200, description: 'Detalle de la finca' })
   @ApiResponse({ status: 404, description: 'Finca no encontrada' })

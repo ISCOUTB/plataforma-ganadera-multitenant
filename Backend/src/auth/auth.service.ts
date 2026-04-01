@@ -56,11 +56,15 @@ export class AuthService {
     return result;
   }
 
-  // Valida credenciales y devuelve access_token + refresh_token.
+  // Valida credenciales y devuelve access_token + refresh_token + user profile.
   async login(
     email: string,
     password: string,
-  ): Promise<{ access_token: string; refresh_token: string }> {
+  ): Promise<{
+    access_token: string;
+    refresh_token: string;
+    user: { id: number; nombre: string; email: string; rol: string; tenant_id: string };
+  }> {
     const usuario = await this.usuariosRepository.findOne({ where: { email } });
 
     // Comparar la contraseña recibida contra el hash almacenado
@@ -83,7 +87,40 @@ export class AuthService {
       refresh_token_hash: refreshHash,
     });
 
-    return tokens;
+    return {
+      ...tokens,
+      user: {
+        id: usuario.id,
+        nombre: usuario.nombre,
+        email: usuario.email,
+        rol: usuario.rol,
+        tenant_id: usuario.tenant_id,
+      },
+    };
+  }
+
+  // Retorna el perfil del usuario autenticado a partir del JWT.
+  async getProfile(userId: number): Promise<{
+    id: number;
+    nombre: string;
+    email: string;
+    rol: string;
+    tenant_id: string;
+    telefono: string | null;
+  }> {
+    const usuario = await this.usuariosRepository.findOne({
+      where: { id: userId },
+    });
+    if (!usuario) throw new UnauthorizedException('Usuario no encontrado');
+
+    return {
+      id: usuario.id,
+      nombre: usuario.nombre,
+      email: usuario.email,
+      rol: usuario.rol,
+      tenant_id: usuario.tenant_id,
+      telefono: usuario.telefono ?? null,
+    };
   }
 
   // Valida el refresh token actual, genera nuevos tokens y rota el hash en DB.

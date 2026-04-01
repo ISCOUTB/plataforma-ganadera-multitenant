@@ -2,14 +2,14 @@ import {
   Entity,
   Column,
   PrimaryColumn,
+  ManyToOne,
+  JoinColumn,
   CreateDateColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { Finca } from '../../fincas/entities/finca.entity';
+import { Animal } from '../../animales/entities/animal.entity';
 
-// Finanza — PK string manual (Grupo B): conserva pk_id_finanza.
-// Columnas de auditoría y tenant agregadas inline.
-// TODO (Fase 4): agregar @ManyToOne(() => Finca) para ligar cada movimiento
-// financiero a la finca (tenant) correspondiente.
 @Entity('finanzas')
 export class Finanza {
   @PrimaryColumn({ length: 15 })
@@ -57,4 +57,12 @@ export class Finanza {
 
   @UpdateDateColumn({ name: 'updated_at' })
   updated_at: Date;
+
+  @ManyToOne(() => Finca, { nullable: true })
+  @JoinColumn({ name: 'fk_id_finca' })
+  finca: Finca;
+
+  @ManyToOne(() => Animal, { nullable: true })
+  @JoinColumn({ name: 'fk_id_bovino' })
+  animal: Animal;
 }

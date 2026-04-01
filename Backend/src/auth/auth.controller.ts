@@ -1,5 +1,6 @@
 import {
   Controller,
+  Get,
   Post,
   Body,
   UseGuards,
@@ -24,7 +25,7 @@ const REFRESH_COOKIE_OPTIONS = {
   httpOnly: true,   // inaccesible desde JavaScript → protege contra XSS
   secure: false,    // true en producción con HTTPS
   sameSite: 'lax' as const,
-  path: '/auth/refresh', // browser solo envía esta cookie al endpoint de refresh
+  path: '/api/auth/refresh', // browser solo envía esta cookie al endpoint de refresh
 };
 
 @ApiTags('auth')
@@ -67,6 +68,18 @@ export class AuthController {
     // Retornar ambos tokens en JSON para compatibilidad con clientes que usan el body.
     // tenant_id NO se incluye en la cookie — siempre viaja en el JWT validado.
     return tokens;
+  }
+
+  // Ruta protegida — retorna el perfil del usuario autenticado.
+  // Flutter usa esto para: cold start (token en storage → validar + cargar perfil),
+  // settings screen, role-based UI gating.
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: 'Obtener perfil del usuario autenticado' })
+  @ApiResponse({ status: 200, description: 'Perfil del usuario' })
+  @ApiResponse({ status: 401, description: 'Token inválido o expirado' })
+  @Get('me')
+  getProfile(@CurrentUser() user: any) {
+    return this.authService.getProfile(user.sub);
   }
 
   // Ruta protegida con JwtRefreshGuard (JWT_REFRESH_SECRET).

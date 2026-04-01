@@ -20,9 +20,7 @@ export class RegistroDto {
   @IsString()
   telefono?: string;
 
-  // tenant_id es opcional en Fase 1; será obligatorio en Fase 4 (multitenant)
-  @ApiPropertyOptional({ example: 'tenant-a', description: 'ID del tenant (organización)' })
-  @IsOptional()
-  @IsString()
-  tenant_id?: string;
+  @ApiProperty({ example: 'tenant-a', description: 'ID del tenant (organización)' })
+  @IsString({ message: 'tenant_id es obligatorio' })
+  tenant_id: string;
 }

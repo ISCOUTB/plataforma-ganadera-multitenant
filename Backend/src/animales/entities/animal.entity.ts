@@ -3,6 +3,11 @@ import { Finca } from '../../fincas/entities/finca.entity';
 import { Potrero } from '../../potreros/entities/potrero.entity';
 import { BaseEntity } from '../../common/entities/base.entity';
 
+export enum EstadoAnimal {
+  ACTIVO = 'activo',
+  VENDIDO = 'vendido',
+}
+
 // Animal extiende BaseEntity (Grupo A):
 //   - PK: id (number, auto-gen) — sustituye a pk_id_bovino
 //   - Auditoría + tenant: tenant_id, created_at, updated_at, deleted_at, created_by, updated_by
@@ -44,6 +49,16 @@ export class Animal extends BaseEntity {
 
   @Column({ nullable: true })
   relacion_genealogica: string;
+
+  // --- Estado y venta ---
+  @Column({ type: 'enum', enum: EstadoAnimal, default: EstadoAnimal.ACTIVO })
+  estado: EstadoAnimal;
+
+  @Column('decimal', { precision: 12, scale: 2, nullable: true })
+  precio_venta: number;
+
+  @Column({ length: 150, nullable: true })
+  comprador: string;
 
   // Relaciones
   @ManyToOne(() => Finca, (finca) => finca.animales)

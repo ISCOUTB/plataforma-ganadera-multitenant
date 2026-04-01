@@ -6,6 +6,7 @@ import {
   OneToMany,
   CreateDateColumn,
   UpdateDateColumn,
+  JoinColumn,
 } from 'typeorm';
 import { Finca } from '../../fincas/entities/finca.entity';
 import { Animal } from '../../animales/entities/animal.entity';
@@ -56,6 +57,7 @@ export class Potrero {
 
   // Relaciones
   @ManyToOne(() => Finca, (finca) => finca.potreros)
+  @JoinColumn({ name: 'fk_id_finca' })
   finca: Finca;
 
   @OneToMany(() => Animal, (animal) => animal.potrero)

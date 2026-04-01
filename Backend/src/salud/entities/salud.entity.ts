@@ -1,12 +1,7 @@
-import { Entity, Column } from 'typeorm';
+import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { BaseEntity } from '../../common/entities/base.entity';
+import { Animal } from '../../animales/entities/animal.entity';
 
-// Salud extiende BaseEntity (Grupo A):
-//   - PK: id (number, auto-gen) — sustituye a pk_id_salud
-//   - Auditoría + tenant: tenant_id, created_at, updated_at, deleted_at, created_by, updated_by
-//   - creado_en ELIMINADO (reemplazado por created_at de BaseEntity)
-// TODO (Fase 4): agregar @ManyToOne(() => Animal) para ligar cada registro
-// de salud al animal correspondiente.
 @Entity('salud')
 export class Salud extends BaseEntity {
   @Column({
@@ -32,4 +27,8 @@ export class Salud extends BaseEntity {
 
   @Column('decimal', { nullable: true })
   costo: number;
+
+  @ManyToOne(() => Animal, { nullable: true })
+  @JoinColumn({ name: 'fk_id_bovino' })
+  animal: Animal;
 }
