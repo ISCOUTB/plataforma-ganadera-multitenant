@@ -1,0 +1,38 @@
+# docker-compose.yml — FarmLink
+#
+# NOTA (Fase 0 - saneamiento): Se eliminó el servicio 'backend' porque referenciaba
+# un Dockerfile inexistente y ejecutaba 'npx prisma migrate deploy', siendo que el
+# backend real usa TypeORM (no Prisma). Solo se conserva el servicio de BD.
+#
+# Para desarrollo del backend: cd Backend && npm run start:dev
+# El Dockerfile para producción se creará en Fase 8 (DevOps).
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: farmlink-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: farmlink
+    ports:
+      # Puerto 5433 en host para evitar conflicto con PostgreSQL local (5432)
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - farmlink-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  farmlink-network:
+    driver: bridge

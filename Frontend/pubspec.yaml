@@ -1,0 +1,79 @@
+name: farmlink_app
+description: "FarmLink Flutter App"
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.10.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+
+  # Network
+  dio: ^5.9.2
+  pretty_dio_logger: ^1.4.0
+
+  # State management
+  flutter_bloc: ^8.1.6
+  bloc: ^8.1.4
+  equatable: ^2.0.5
+
+  # Functional
+  dartz: ^0.10.1
+
+  # DI
+  get_it: ^7.7.0
+
+  # Routing
+  go_router: ^14.6.2
+
+  # Storage
+  flutter_secure_storage: ^9.2.2
+  shared_preferences: ^2.3.3
+
+  # SVG / icons
+  flutter_svg: ^2.0.10+1
+  phosphor_flutter: ^2.1.0
+
+  # i18n
+  intl: ^0.20.2
+  flutter_localizations:
+    sdk: flutter
+
+  # --- Diseño profesional ---
+  # Charts interactivos (donut, bar, line, radar)
+  fl_chart: ^0.70.2
+
+  # Micro-animaciones declarativas (stagger, fade, scale, slide)
+  flutter_animate: ^4.5.2
+
+  # Skeleton loaders (shimmer)
+  shimmer: ^3.0.0
+
+  # Tipografía profesional
+  google_fonts: ^6.2.1
+
+  # Grid tipo Bento (cards de diferentes tamaños)
+  flutter_staggered_grid_view: ^0.7.0
+
+  # Export PDF
+  pdf: ^3.11.1
+  printing: ^5.13.3
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  bloc_test: ^9.1.7
+  mocktail: ^1.0.4
+
+flutter:
+  generate: true
+  uses-material-design: true
+  assets:
+    - assets/Logo.png
+    - assets/farm_hero.jpeg
+    - assets/about_us.jpeg

@@ -1,0 +1,101 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  ADMIN
+  TECHNICIAN
+  WORKER
+}
+
+enum AnimalStatus {
+  ACTIVO
+  VENDIDO
+  MUERTO
+  TRATAMIENTO
+}
+
+enum FinanceType {
+  INGRESO
+  GASTO
+}
+
+model Tenant {
+  id             String          @id @default(uuid())
+  name           String
+  createdAt      DateTime        @default(now())
+  users          User[]
+  animals        Animal[]
+  healthRecords  HealthRecord[]
+  financeRecords FinanceRecord[]
+}
+
+model User {
+  id           String   @id @default(uuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         UserRole @default(ADMIN)
+  tenantId     String
+  tenant       Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  createdAt    DateTime @default(now())
+}
+
+model Animal {
+  id              String         @id @default(uuid())
+  tenantId        String
+  tenant          Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  code            String
+  name            String?
+  breed           String?
+  ageMonths       Int?
+  weightKg        Float?
+  productiveState String?
+  status          AnimalStatus   @default(ACTIVO)
+  createdAt       DateTime       @default(now())
+  healthRecords   HealthRecord[]
+
+  @@unique([tenantId, code])
+}
+
+model HealthRecord {
+  id            String   @id @default(uuid())
+  tenantId      String
+  tenant        Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  animalId      String
+  animal        Animal   @relation(fields: [animalId], references: [id], onDelete: Cascade)
+  procedureType String
+  description   String?
+  date          DateTime
+  supplyUsed    String?
+  createdAt     DateTime @default(now())
+}
+
+model FinanceRecord {
+  id          String      @id @default(uuid())
+  tenantId    String
+  tenant      Tenant      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  type        FinanceType
+  category    String
+  amount      Float
+  description String?
+  date        DateTime
+  createdAt   DateTime    @default(now())
+}
+
+model ReproductiveEvent {
+  id        String   @id @default(uuid())
+  animalId  String
+  tenantId  String
+  eventType String
+  date      DateTime
+  result    String?
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
