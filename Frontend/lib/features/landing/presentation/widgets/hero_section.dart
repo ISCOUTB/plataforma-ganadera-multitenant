@@ -22,9 +22,9 @@ class HeroSection extends StatelessWidget {
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                Color(0xFF0F2440),
-                Color(0xFF1E3A5F),
-                Color(0xFF1A3355),
+                Color(0xFF0A1F0A),
+                Color(0xFF1B4D1E),
+                Color(0xFF163D19),
               ],
             ),
           ),
@@ -130,10 +130,10 @@ class _HeroText extends StatelessWidget {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           decoration: BoxDecoration(
-            color: const Color(0xFF3B82F6).withValues(alpha: 0.2),
+            color: const Color(0xFF2E7D32).withValues(alpha: 0.2),
             borderRadius: BorderRadius.circular(999),
             border: Border.all(
-              color: const Color(0xFF3B82F6).withValues(alpha: 0.3),
+              color: const Color(0xFF2E7D32).withValues(alpha: 0.3),
             ),
           ),
           child: Row(
@@ -143,7 +143,7 @@ class _HeroText extends StatelessWidget {
                 width: 8,
                 height: 8,
                 decoration: const BoxDecoration(
-                  color: Color(0xFF3B82F6),
+                  color: Color(0xFF2E7D32),
                   shape: BoxShape.circle,
                 ),
               ),
@@ -151,7 +151,7 @@ class _HeroText extends StatelessWidget {
               Text(
                 'Plataforma SaaS Multitenant',
                 style: theme.textTheme.labelMedium?.copyWith(
-                  color: const Color(0xFF93C5FD),
+                  color: const Color(0xFF81C784),
                   fontWeight: FontWeight.w700,
                   letterSpacing: 0.5,
                 ),
@@ -205,12 +205,12 @@ class _HeroText extends StatelessWidget {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 32, vertical: 18),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF3B82F6),
+                    color: const Color(0xFF2E7D32),
                     borderRadius: BorderRadius.circular(14),
                     boxShadow: [
                       BoxShadow(
                         color:
-                            const Color(0xFF3B82F6).withValues(alpha: 0.4),
+                            const Color(0xFF2E7D32).withValues(alpha: 0.4),
                         blurRadius: 24,
                         offset: const Offset(0, 8),
                       ),
@@ -281,7 +281,7 @@ class _FloatingCards extends StatelessWidget {
               icon: PhosphorIcons.cow(PhosphorIconsStyle.fill),
               label: 'Animales activos',
               value: '450',
-              color: const Color(0xFF3B82F6),
+              color: const Color(0xFF2E7D32),
             )
                 .animate()
                 .fadeIn(duration: 600.ms, delay: 700.ms)
@@ -355,7 +355,7 @@ class _StatCard extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(compact ? 16 : 20),
       decoration: BoxDecoration(
-        color: const Color(0xFF1A2E4A),
+        color: const Color(0xFF163D19),
         borderRadius: BorderRadius.circular(18),
         border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
         boxShadow: [

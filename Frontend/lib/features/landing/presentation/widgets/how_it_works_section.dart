@@ -31,7 +31,7 @@ class HowItWorksSection extends StatelessWidget {
                           horizontal: 14, vertical: 6),
                       decoration: BoxDecoration(
                         color:
-                            const Color(0xFF1E3A5F).withValues(alpha: 0.08),
+                            const Color(0xFF1B4D1E).withValues(alpha: 0.08),
                         borderRadius: BorderRadius.circular(999),
                       ),
                       child: Text(
@@ -39,7 +39,7 @@ class HowItWorksSection extends StatelessWidget {
                         style: theme.textTheme.labelSmall?.copyWith(
                           fontWeight: FontWeight.w800,
                           letterSpacing: 1.5,
-                          color: const Color(0xFF1E3A5F),
+                          color: const Color(0xFF1B4D1E),
                         ),
                       ),
                     ).animate().fadeIn(duration: 500.ms),
@@ -144,9 +144,9 @@ class _Connector extends StatelessWidget {
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  const Color(0xFF3B82F6).withValues(alpha: 0.1),
-                  const Color(0xFF3B82F6).withValues(alpha: 0.5),
-                  const Color(0xFF3B82F6).withValues(alpha: 0.1),
+                  const Color(0xFF2E7D32).withValues(alpha: 0.1),
+                  const Color(0xFF2E7D32).withValues(alpha: 0.5),
+                  const Color(0xFF2E7D32).withValues(alpha: 0.1),
                 ],
               ),
             ),
@@ -181,7 +181,7 @@ class _StepCard extends StatelessWidget {
             gradient: const LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [Color(0xFF1E3A5F), Color(0xFF3B82F6)],
+              colors: [Color(0xFF1B4D1E), Color(0xFF2E7D32)],
             ),
             borderRadius: BorderRadius.circular(20),
           ),

@@ -17,7 +17,7 @@ class StatsStrip extends StatelessWidget {
           ),
           decoration: const BoxDecoration(
             gradient: LinearGradient(
-              colors: [Color(0xFF1E3A5F), Color(0xFF0F2440)],
+              colors: [Color(0xFF1B4D1E), Color(0xFF0A1F0A)],
             ),
           ),
           child: Center(

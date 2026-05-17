@@ -23,7 +23,7 @@ class CtaSection extends StatelessWidget {
             gradient: const LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [Color(0xFF0F2440), Color(0xFF1E3A5F)],
+              colors: [Color(0xFF0A1F0A), Color(0xFF1B4D1E)],
             ),
             borderRadius: BorderRadius.circular(28),
           ),
@@ -57,12 +57,12 @@ class CtaSection extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(
                         horizontal: 40, vertical: 20),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF3B82F6),
+                      color: const Color(0xFF2E7D32),
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: [
                         BoxShadow(
                           color:
-                              const Color(0xFF3B82F6).withValues(alpha: 0.4),
+                              const Color(0xFF2E7D32).withValues(alpha: 0.4),
                           blurRadius: 30,
                           offset: const Offset(0, 10),
                         ),

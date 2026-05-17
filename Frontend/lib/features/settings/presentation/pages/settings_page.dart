@@ -6,6 +6,7 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import '../../../../core/di/injection.dart';
 import '../../../../core/locale/locale_controller.dart';
+import '../../../../core/network/dio_client.dart';
 import '../../../../core/theme/theme_controller.dart';
 import '../../../auth/domain/entities/user.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
@@ -54,12 +55,12 @@ class SettingsPage extends StatelessWidget {
           _SettingsTile(
             icon: PhosphorIcons.key(PhosphorIconsStyle.bold),
             label: t.changePassword,
-            onTap: () => _comingSoon(context, t.changePassword),
+            onTap: () => _showChangePasswordDialog(context),
           ),
           _SettingsTile(
             icon: PhosphorIcons.bell(PhosphorIconsStyle.bold),
             label: t.notifications,
-            onTap: () => _comingSoon(context, t.notifications),
+            onTap: () => context.push('/settings/notificaciones'),
           ),
           _SettingsTile(
             icon: PhosphorIcons.translate(PhosphorIconsStyle.bold),
@@ -107,6 +108,166 @@ class SettingsPage extends StatelessWidget {
           backgroundColor: cs.primary,
         ),
       );
+  }
+
+  Future<void> _showChangePasswordDialog(BuildContext context) async {
+    final cs = Theme.of(context).colorScheme;
+    final formKey = GlobalKey<FormState>();
+    final currentPassCtrl = TextEditingController();
+    final newPassCtrl = TextEditingController();
+    final confirmPassCtrl = TextEditingController();
+
+    await showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => _ChangePasswordDialog(
+        formKey: formKey,
+        currentPassCtrl: currentPassCtrl,
+        newPassCtrl: newPassCtrl,
+        confirmPassCtrl: confirmPassCtrl,
+        cs: cs,
+        onSuccess: () {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text('Contraseña actualizada'),
+              backgroundColor: cs.primary,
+            ),
+          );
+        },
+        onError: () {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text('Contraseña actual incorrecta'),
+              backgroundColor: cs.error,
+            ),
+          );
+        },
+        user: context.read<AuthBloc>().state.user,
+      ),
+    );
+
+    currentPassCtrl.dispose();
+    newPassCtrl.dispose();
+    confirmPassCtrl.dispose();
+  }
+}
+
+class _ChangePasswordDialog extends StatefulWidget {
+  final GlobalKey<FormState> formKey;
+  final TextEditingController currentPassCtrl;
+  final TextEditingController newPassCtrl;
+  final TextEditingController confirmPassCtrl;
+  final ColorScheme cs;
+  final VoidCallback onSuccess;
+  final VoidCallback onError;
+  final dynamic user;
+
+  const _ChangePasswordDialog({
+    required this.formKey,
+    required this.currentPassCtrl,
+    required this.newPassCtrl,
+    required this.confirmPassCtrl,
+    required this.cs,
+    required this.onSuccess,
+    required this.onError,
+    required this.user,
+  });
+
+  @override
+  State<_ChangePasswordDialog> createState() => _ChangePasswordDialogState();
+}
+
+class _ChangePasswordDialogState extends State<_ChangePasswordDialog> {
+  bool _loading = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Cambiar contraseña'),
+      content: Form(
+        key: widget.formKey,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextFormField(
+              controller: widget.currentPassCtrl,
+              obscureText: true,
+              decoration: const InputDecoration(
+                labelText: 'Contraseña actual',
+                prefixIcon: Icon(Icons.lock_outline),
+              ),
+              validator: (v) => (v == null || v.isEmpty) ? 'Requerido' : null,
+            ),
+            const SizedBox(height: 12),
+            TextFormField(
+              controller: widget.newPassCtrl,
+              obscureText: true,
+              decoration: const InputDecoration(
+                labelText: 'Nueva contraseña',
+                prefixIcon: Icon(Icons.lock_reset),
+              ),
+              validator: (v) =>
+                  (v == null || v.length < 6) ? 'Mínimo 6 caracteres' : null,
+            ),
+            const SizedBox(height: 12),
+            TextFormField(
+              controller: widget.confirmPassCtrl,
+              obscureText: true,
+              decoration: const InputDecoration(
+                labelText: 'Confirmar contraseña',
+                prefixIcon: Icon(Icons.lock_reset),
+              ),
+              validator: (v) => v != widget.newPassCtrl.text
+                  ? 'Las contraseñas no coinciden'
+                  : null,
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancelar'),
+        ),
+        TextButton(
+          onPressed: _loading ? null : _submit,
+          child: _loading
+              ? const SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : Text('Guardar', style: TextStyle(color: widget.cs.primary)),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _submit() async {
+    if (!widget.formKey.currentState!.validate()) return;
+    if (widget.user == null) return;
+
+    setState(() => _loading = true);
+
+    final dio = getIt<DioClient>().dio;
+    try {
+      await dio.post('/auth/login', data: {
+        'email': widget.user.email,
+        'password': widget.currentPassCtrl.text,
+      });
+      await dio.patch('/usuarios/${widget.user.id}', data: {
+        'password': widget.newPassCtrl.text,
+      });
+      if (mounted) {
+        Navigator.pop(context);
+        widget.onSuccess();
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _loading = false);
+        widget.onError();
+      }
+    }
   }
 }
 
@@ -199,7 +360,8 @@ class _ProfileCard extends StatelessWidget {
     final parts = name.trim().split(RegExp(r'\s+'));
     if (parts.isEmpty) return '?';
     if (parts.length == 1) return parts.first.substring(0, 1).toUpperCase();
-    return (parts.first.substring(0, 1) + parts[1].substring(0, 1)).toUpperCase();
+    return (parts.first.substring(0, 1) + parts[1].substring(0, 1))
+        .toUpperCase();
   }
 }
 
@@ -214,10 +376,10 @@ class _Chip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
-        color: outlined ? Colors.transparent : cs.primary.withValues(alpha: 0.12),
-        border: outlined
-            ? Border.all(color: cs.outline, width: 1)
-            : null,
+        color: outlined
+            ? Colors.transparent
+            : cs.primary.withValues(alpha: 0.12),
+        border: outlined ? Border.all(color: cs.outline, width: 1) : null,
         borderRadius: BorderRadius.circular(999),
       ),
       child: Text(
@@ -333,9 +495,7 @@ class _LogoutButton extends StatelessWidget {
             borderRadius: BorderRadius.circular(14),
             child: InkWell(
               borderRadius: BorderRadius.circular(14),
-              onTap: loading
-                  ? null
-                  : () => _confirmLogout(context),
+              onTap: loading ? null : () => _confirmLogout(context),
               child: Padding(
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 child: Row(
@@ -351,8 +511,7 @@ class _LogoutButton extends StatelessWidget {
                         ),
                       )
                     else
-                      const Icon(Icons.logout,
-                          color: Colors.white, size: 18),
+                      const Icon(Icons.logout, color: Colors.white, size: 18),
                     const SizedBox(width: 10),
                     Text(
                       S.of(context).logout,

@@ -20,15 +20,17 @@ class AlertaPrioritaria extends Equatable {
   final String tipo;
   final AlertaSeverity severity;
   final Map<String, dynamic> detalle;
+  final DateTime? fecha;
 
   const AlertaPrioritaria({
     required this.tipo,
     required this.severity,
     required this.detalle,
+    this.fecha,
   });
 
   @override
-  List<Object?> get props => [tipo, severity, detalle];
+  List<Object?> get props => [tipo, severity, detalle, fecha];
 }
 
 class AlertasSummary extends Equatable {

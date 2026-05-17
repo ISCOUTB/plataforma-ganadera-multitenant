@@ -71,7 +71,7 @@ class FeaturesSection extends StatelessWidget {
                           horizontal: 14, vertical: 6),
                       decoration: BoxDecoration(
                         color:
-                            const Color(0xFF1E3A5F).withValues(alpha: 0.08),
+                            const Color(0xFF1B4D1E).withValues(alpha: 0.08),
                         borderRadius: BorderRadius.circular(999),
                       ),
                       child: Text(
@@ -79,7 +79,7 @@ class FeaturesSection extends StatelessWidget {
                         style: theme.textTheme.labelSmall?.copyWith(
                           fontWeight: FontWeight.w800,
                           letterSpacing: 1.5,
-                          color: const Color(0xFF1E3A5F),
+                          color: const Color(0xFF1B4D1E),
                         ),
                       ),
                     ).animate().fadeIn(duration: 500.ms),
@@ -156,7 +156,7 @@ class _FeatureCardState extends State<_FeatureCard> {
         curve: Curves.easeOutCubic,
         padding: const EdgeInsets.all(28),
         decoration: BoxDecoration(
-          color: _hovered ? const Color(0xFF1E3A5F) : Colors.white,
+          color: _hovered ? const Color(0xFF1B4D1E) : Colors.white,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: _hovered ? Colors.transparent : const Color(0xFFE2E8F0),
@@ -164,7 +164,7 @@ class _FeatureCardState extends State<_FeatureCard> {
           boxShadow: _hovered
               ? [
                   BoxShadow(
-                    color: const Color(0xFF1E3A5F).withValues(alpha: 0.2),
+                    color: const Color(0xFF1B4D1E).withValues(alpha: 0.2),
                     blurRadius: 30,
                     offset: const Offset(0, 10),
                   ),
@@ -179,15 +179,15 @@ class _FeatureCardState extends State<_FeatureCard> {
               height: 52,
               decoration: BoxDecoration(
                 color: _hovered
-                    ? const Color(0xFF3B82F6).withValues(alpha: 0.2)
-                    : const Color(0xFF1E3A5F).withValues(alpha: 0.08),
+                    ? const Color(0xFF2E7D32).withValues(alpha: 0.2)
+                    : const Color(0xFF1B4D1E).withValues(alpha: 0.08),
                 borderRadius: BorderRadius.circular(14),
               ),
               child: Icon(
                 widget.data.icon,
                 color: _hovered
-                    ? const Color(0xFF93C5FD)
-                    : const Color(0xFF1E3A5F),
+                    ? const Color(0xFF81C784)
+                    : const Color(0xFF1B4D1E),
                 size: 24,
               ),
             ),

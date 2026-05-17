@@ -35,6 +35,7 @@ import '../../features/salud/presentation/pages/salud_detail_page.dart';
 import '../../features/salud/presentation/pages/salud_form_page.dart';
 import '../../features/salud/presentation/pages/salud_list_page.dart';
 import '../../features/settings/presentation/pages/settings_page.dart';
+import '../../features/settings/presentation/pages/notifications_settings_page.dart';
 import '../../features/usuarios/presentation/pages/usuarios_page.dart';
 import '../../features/admin/presentation/pages/admin_panel_page.dart';
 import '../../features/landing/presentation/pages/landing_page.dart';
@@ -321,6 +322,10 @@ GoRouter buildAppRouter(AuthBloc authBloc) {
               GoRoute(
                 path: 'admin',
                 builder: (_, _) => const AdminPanelPage(),
+              ),
+              GoRoute(
+                path: 'notificaciones',
+                builder: (_, _) => const NotificationsSettingsPage(),
               ),
             ],
           ),
