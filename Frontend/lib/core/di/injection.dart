@@ -7,6 +7,21 @@ import '../network/dio_client.dart';
 import '../network/interceptors/auth_interceptor.dart';
 import '../routing/auth_event_bus.dart';
 import '../storage/secure_storage_service.dart';
+// Veterinarios
+import '../../features/veterinarios/data/datasources/veterinarios_remote_datasource.dart';
+import '../../features/veterinarios/data/repositories/veterinarios_repository_impl.dart';
+import '../../features/veterinarios/domain/repositories/veterinarios_repository.dart';
+import '../../features/veterinarios/presentation/bloc/veterinarios_bloc.dart';
+// Citas
+import '../../features/citas/data/datasources/citas_remote_datasource.dart';
+import '../../features/citas/data/repositories/citas_repository_impl.dart';
+import '../../features/citas/domain/repositories/citas_repository.dart';
+import '../../features/citas/presentation/bloc/citas_bloc.dart';
+// Tratamientos
+import '../../features/tratamientos/data/datasources/tratamientos_remote_datasource.dart';
+import '../../features/tratamientos/data/repositories/tratamientos_repository_impl.dart';
+import '../../features/tratamientos/domain/repositories/tratamientos_repository.dart';
+import '../../features/tratamientos/presentation/bloc/tratamientos_bloc.dart';
 import '../../features/dashboard/data/datasources/dashboard_local_datasource.dart';
 import '../../features/animales/data/datasources/animal_remote_datasource.dart';
 import '../../features/animales/data/repositories/animal_repository_impl.dart';
@@ -360,5 +375,37 @@ Future<void> configureDependencies() async {
   );
   getIt.registerFactory<AdminBloc>(
     () => AdminBloc(repository: getIt<AdminRepository>()),
+  );
+  // ---------- Veterinarios ----------
+  getIt.registerLazySingleton<VeterinariosRemoteDataSource>(
+    () => VeterinariosRemoteDataSource(getIt<DioClient>().dio),
+  );
+  getIt.registerLazySingleton<VeterinariosRepository>(
+    () => VeterinariosRepositoryImpl(remote: getIt<VeterinariosRemoteDataSource>()),
+  );
+  getIt.registerFactory<VeterinariosBloc>(
+    () => VeterinariosBloc(repository: getIt<VeterinariosRepository>()),
+  );
+
+  // ---------- Citas ----------
+  getIt.registerLazySingleton<CitasRemoteDataSource>(
+    () => CitasRemoteDataSource(getIt<DioClient>().dio),
+  );
+  getIt.registerLazySingleton<CitasRepository>(
+    () => CitasRepositoryImpl(remote: getIt<CitasRemoteDataSource>()),
+  );
+  getIt.registerFactory<CitasBloc>(
+    () => CitasBloc(repository: getIt<CitasRepository>()),
+  );
+
+  // ---------- Tratamientos ----------
+  getIt.registerLazySingleton<TratamientosRemoteDataSource>(
+    () => TratamientosRemoteDataSource(getIt<DioClient>().dio),
+  );
+  getIt.registerLazySingleton<TratamientosRepository>(
+    () => TratamientosRepositoryImpl(remote: getIt<TratamientosRemoteDataSource>()),
+  );
+  getIt.registerFactory<TratamientosBloc>(
+    () => TratamientosBloc(repository: getIt<TratamientosRepository>()),
   );
 }
