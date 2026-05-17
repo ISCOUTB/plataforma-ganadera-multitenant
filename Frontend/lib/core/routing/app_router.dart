@@ -39,6 +39,14 @@ import '../../features/settings/presentation/pages/notifications_settings_page.d
 import '../../features/usuarios/presentation/pages/usuarios_page.dart';
 import '../../features/admin/presentation/pages/admin_panel_page.dart';
 import '../../features/landing/presentation/pages/landing_page.dart';
+import '../../features/veterinarios/presentation/pages/veterinarios_list_page.dart';
+import '../../features/veterinarios/presentation/pages/veterinario_form_page.dart';
+import '../../features/veterinarios/presentation/pages/veterinario_detail_page.dart';
+import '../../features/citas/presentation/pages/citas_list_page.dart';
+import '../../features/citas/presentation/pages/cita_form_page.dart';
+import '../../features/citas/presentation/pages/cita_detail_page.dart';
+import '../../features/tratamientos/presentation/pages/tratamientos_list_page.dart';
+import '../../features/tratamientos/presentation/pages/tratamiento_detail_page.dart';
 import 'home_shell.dart';
 import 'route_paths.dart';
 
@@ -73,44 +81,32 @@ GoRouter buildAppRouter(AuthBloc authBloc) {
       }
     },
     routes: [
-      // Landing (pre-auth marketing page)
       GoRoute(path: '/', builder: (_, _) => const LandingPage()),
-
-      // Auth routes (sin shell)
       GoRoute(path: RoutePaths.splash, builder: (_, _) => const SplashPage()),
       GoRoute(path: RoutePaths.login, builder: (_, _) => const LoginPage()),
-      GoRoute(
-          path: RoutePaths.register, builder: (_, _) => const RegisterPage()),
+      GoRoute(path: RoutePaths.register, builder: (_, _) => const RegisterPage()),
 
-      // Shell con bottom nav
       ShellRoute(
         builder: (context, state, child) => HomeShell(
           location: state.matchedLocation,
           child: child,
         ),
         routes: [
-          // HOME
           GoRoute(
             path: RoutePaths.home,
-            pageBuilder: (_, _) =>
-                const NoTransitionPage(child: DashboardBentoPage()),
+            pageBuilder: (_, _) => const NoTransitionPage(child: DashboardBentoPage()),
           ),
 
-          // INVENTORY hub + sub-rutas
+          // INVENTORY
           GoRoute(
             path: RoutePaths.inventory,
-            pageBuilder: (_, _) =>
-                const NoTransitionPage(child: InventoryPage()),
+            pageBuilder: (_, _) => const NoTransitionPage(child: InventoryPage()),
             routes: [
-              // Animales
               GoRoute(
                 path: 'animales',
                 builder: (_, _) => const AnimalesListPage(),
                 routes: [
-                  GoRoute(
-                    path: 'new',
-                    builder: (_, _) => const AnimalFormPage(),
-                  ),
+                  GoRoute(path: 'new', builder: (_, _) => const AnimalFormPage()),
                   GoRoute(
                     path: ':id',
                     builder: (context, state) => AnimalDetailPage(
@@ -133,50 +129,35 @@ GoRouter buildAppRouter(AuthBloc authBloc) {
                   ),
                 ],
               ),
-              // Fincas
               GoRoute(
                 path: 'fincas',
                 builder: (_, _) => const FincasListPage(),
                 routes: [
-                  GoRoute(
-                    path: 'new',
-                    builder: (_, _) => const FincaFormPage(),
-                  ),
+                  GoRoute(path: 'new', builder: (_, _) => const FincaFormPage()),
                   GoRoute(
                     path: ':id',
-                    builder: (context, state) =>
-                        FincaDetailPage(fincaId: state.pathParameters['id']!),
+                    builder: (context, state) => FincaDetailPage(fincaId: state.pathParameters['id']!),
                     routes: [
                       GoRoute(
                         path: 'edit',
-                        builder: (context, state) => FincaFormPage(
-                          editId: state.pathParameters['id'],
-                        ),
+                        builder: (context, state) => FincaFormPage(editId: state.pathParameters['id']),
                       ),
                     ],
                   ),
                 ],
               ),
-              // Potreros
               GoRoute(
                 path: 'potreros',
                 builder: (_, _) => const PotrerosListPage(),
                 routes: [
-                  GoRoute(
-                    path: 'new',
-                    builder: (_, _) => const PotreroFormPage(),
-                  ),
+                  GoRoute(path: 'new', builder: (_, _) => const PotreroFormPage()),
                   GoRoute(
                     path: ':id',
-                    builder: (context, state) => PotreroDetailPage(
-                      potreroId: state.pathParameters['id']!,
-                    ),
+                    builder: (context, state) => PotreroDetailPage(potreroId: state.pathParameters['id']!),
                     routes: [
                       GoRoute(
                         path: 'edit',
-                        builder: (context, state) => PotreroFormPage(
-                          editId: state.pathParameters['id'],
-                        ),
+                        builder: (context, state) => PotreroFormPage(editId: state.pathParameters['id']),
                       ),
                     ],
                   ),
@@ -185,20 +166,16 @@ GoRouter buildAppRouter(AuthBloc authBloc) {
             ],
           ),
 
-          // HEALTH hub + sub-rutas
+          // HEALTH
           GoRoute(
             path: RoutePaths.health,
             pageBuilder: (_, _) => const NoTransitionPage(child: HealthPage()),
             routes: [
-              // Salud
               GoRoute(
                 path: 'salud',
                 builder: (_, _) => const SaludListPage(),
                 routes: [
-                  GoRoute(
-                    path: 'new',
-                    builder: (_, _) => const SaludFormPage(),
-                  ),
+                  GoRoute(path: 'new', builder: (_, _) => const SaludFormPage()),
                   GoRoute(
                     path: ':id',
                     builder: (context, state) => SaludDetailPage(
@@ -215,118 +192,124 @@ GoRouter buildAppRouter(AuthBloc authBloc) {
                   ),
                 ],
               ),
-              // Reproducción
               GoRoute(
                 path: 'reproduccion',
                 builder: (_, _) => const ReproduccionListPage(),
                 routes: [
-                  GoRoute(
-                    path: 'new',
-                    builder: (_, _) => const ReproduccionFormPage(),
-                  ),
+                  GoRoute(path: 'new', builder: (_, _) => const ReproduccionFormPage()),
                   GoRoute(
                     path: ':id',
-                    builder: (context, state) => ReproduccionFormPage(
-                      editId: state.pathParameters['id'],
+                    builder: (context, state) => ReproduccionFormPage(editId: state.pathParameters['id']),
+                    routes: [
+                      GoRoute(
+                        path: 'edit',
+                        builder: (context, state) => ReproduccionFormPage(editId: state.pathParameters['id']),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              GoRoute(path: 'alertas', builder: (_, _) => const AlertasPage()),
+              GoRoute(
+                path: 'veterinarios',
+                builder: (_, _) => const VeterinariosListPage(),
+                routes: [
+                  GoRoute(path: 'new', builder: (_, _) => const VeterinarioFormPage()),
+                  GoRoute(
+                    path: ':id',
+                    builder: (context, state) => VeterinarioDetailPage(
+                      veterinarioId: int.parse(state.pathParameters['id']!),
                     ),
                     routes: [
                       GoRoute(
                         path: 'edit',
-                        builder: (context, state) => ReproduccionFormPage(
-                          editId: state.pathParameters['id'],
+                        builder: (context, state) => VeterinarioFormPage(
+                          editId: int.parse(state.pathParameters['id']!),
                         ),
                       ),
                     ],
                   ),
                 ],
               ),
-              // Centro de alertas consolidado
               GoRoute(
-                path: 'alertas',
-                builder: (_, _) => const AlertasPage(),
+                path: 'citas',
+                builder: (_, _) => const CitasListPage(),
+                routes: [
+                  GoRoute(path: 'new', builder: (_, _) => const CitaFormPage()),
+                  GoRoute(
+                    path: ':id',
+                    builder: (context, state) => CitaDetailPage(
+                      citaId: int.parse(state.pathParameters['id']!),
+                    ),
+                  ),
+                ],
+              ),
+              GoRoute(
+                path: 'tratamientos',
+                builder: (_, _) => const TratamientosListPage(),
+                routes: [
+                  GoRoute(
+                    path: ':id',
+                    builder: (context, state) => TratamientoDetailPage(
+                      tratamientoId: int.parse(state.pathParameters['id']!),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
 
-          // MONEY hub + sub-rutas
+          // MONEY
           GoRoute(
             path: RoutePaths.money,
             pageBuilder: (_, _) => const NoTransitionPage(child: MoneyPage()),
             routes: [
-              // Finanzas
               GoRoute(
                 path: 'finanzas',
                 builder: (_, _) => const FinanzasListPage(),
                 routes: [
-                  GoRoute(
-                    path: 'new',
-                    builder: (_, _) => const FinanzaFormPage(),
-                  ),
+                  GoRoute(path: 'new', builder: (_, _) => const FinanzaFormPage()),
                   GoRoute(
                     path: ':id',
-                    builder: (context, state) => FinanzaFormPage(
-                      editId: state.pathParameters['id'],
-                    ),
+                    builder: (context, state) => FinanzaFormPage(editId: state.pathParameters['id']),
                     routes: [
                       GoRoute(
                         path: 'edit',
-                        builder: (context, state) => FinanzaFormPage(
-                          editId: state.pathParameters['id'],
-                        ),
+                        builder: (context, state) => FinanzaFormPage(editId: state.pathParameters['id']),
                       ),
                     ],
                   ),
                 ],
               ),
-              // Alimentos
               GoRoute(
                 path: 'alimentos',
                 builder: (_, _) => const AlimentosListPage(),
                 routes: [
-                  GoRoute(
-                    path: 'new',
-                    builder: (_, _) => const AlimentoFormPage(),
-                  ),
+                  GoRoute(path: 'new', builder: (_, _) => const AlimentoFormPage()),
                   GoRoute(
                     path: ':id/edit',
-                    builder: (context, state) => AlimentoFormPage(
-                      editId: state.pathParameters['id'],
-                    ),
+                    builder: (context, state) => AlimentoFormPage(editId: state.pathParameters['id']),
                   ),
                 ],
               ),
-              // Movimientos
               GoRoute(
                 path: 'movimientos',
                 builder: (_, _) => const MovimientosListPage(),
                 routes: [
-                  GoRoute(
-                    path: 'new',
-                    builder: (_, _) => const MovimientoFormPage(),
-                  ),
+                  GoRoute(path: 'new', builder: (_, _) => const MovimientoFormPage()),
                 ],
               ),
             ],
           ),
 
-          // SETTINGS + sub-rutas
+          // SETTINGS
           GoRoute(
             path: RoutePaths.settings,
-            pageBuilder: (_, _) =>
-                const NoTransitionPage(child: SettingsPage()),
+            pageBuilder: (_, _) => const NoTransitionPage(child: SettingsPage()),
             routes: [
-              GoRoute(
-                path: 'usuarios',
-                builder: (_, _) => const UsuariosPage(),
-              ),
-              GoRoute(
-                path: 'admin',
-                builder: (_, _) => const AdminPanelPage(),
-              ),
-              GoRoute(
-                path: 'notificaciones',
-                builder: (_, _) => const NotificationsSettingsPage(),
-              ),
+              GoRoute(path: 'usuarios', builder: (_, _) => const UsuariosPage()),
+              GoRoute(path: 'admin', builder: (_, _) => const AdminPanelPage()),
+              GoRoute(path: 'notificaciones', builder: (_, _) => const NotificationsSettingsPage()),
             ],
           ),
         ],
