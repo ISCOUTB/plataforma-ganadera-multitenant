@@ -31,6 +31,12 @@ import { MovimientosModule } from './movimientos/movimientos.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { AlertasModule } from './alertas/alertas.module';
 import { AdminModule } from './admin/admin.module';
+import { VeterinariosModule } from './veterinarios/veterinarios.module';
+import { CitasModule } from './citas/citas.module';
+import { TratamientosModule } from './tratamientos/tratamientos.module';
+import { Veterinario } from './veterinarios/entities/veterinario.entity';
+import { Cita } from './citas/entities/cita.entity';
+import { Tratamiento, SeguimientoTratamiento } from './tratamientos/entities/tratamiento.entity';
 
 @Module({
   imports: [
@@ -42,25 +48,16 @@ import { AdminModule } from './admin/admin.module';
       useFactory: (configService: ConfigService) => ({
         type: 'postgres',
         host: configService.get('DB_HOST'),
-        // ConfigService devuelve string desde .env — TypeORM espera number para port.
-        // El prefijo '+' convierte '5433' → 5433.
         port: +configService.get<string>('DB_PORT', '5433'),
         username: configService.get('DB_USERNAME'),
         password: configService.get('DB_PASSWORD'),
         database: configService.get('DB_DATABASE'),
-        // Lista global de entidades para que TypeORM conozca el esquema.
-        // Cada módulo de dominio registra su propio Repository vía
-        // TypeOrmModule.forFeature([...]) dentro de su propio módulo.
         entities: [
           Usuario, Finca, Animal, Potrero,
           Alimento, Salud, Reproduccion, Finanza,
-          BovinoAlimento,
-          MovimientoAnimal
+          BovinoAlimento, MovimientoAnimal,
+          Veterinario, Cita, Tratamiento, SeguimientoTratamiento
         ],
-        // OPS-1: synchronize:false en todos los entornos. Cualquier cambio de
-        // esquema pasa por una migración explícita en src/migrations/. Ver
-        // src/config/typeorm-cli.config.ts y los scripts migration:* en
-        // package.json.
         synchronize: false,
         migrations: ['dist/migrations/*.js'],
         migrationsRun: true,
@@ -68,12 +65,6 @@ import { AdminModule } from './admin/admin.module';
       }),
       inject: [ConfigService],
     }),
-    // NOTA (Fase 0 - saneamiento): Se eliminó el bloque TypeOrmModule.forFeature([...])
-    // que existía aquí. Ese bloque registraba repositories en AppModule sin que
-    // ningún service los consumiera directamente en este nivel. Cada módulo de
-    // dominio (FincasModule, AnimalesModule, etc.) debe registrar sus propios
-    // repositories con forFeature() dentro de su propio archivo *.module.ts.
-    // AuthModule registra JwtStrategy globalmente para todos los módulos
     AuthModule,
     FincasModule,
     AnimalesModule,
@@ -88,15 +79,11 @@ import { AdminModule } from './admin/admin.module';
     DashboardModule,
     AlertasModule,
     AdminModule,
+    VeterinariosModule,
+    CitasModule,
+    TratamientosModule,
   ],
   controllers: [AppController],
-  // APP_GUARD registra guards globalmente — se ejecutan en orden de declaración
-  // en TODAS las rutas. Las rutas públicas usan @Public() para eximirse.
-  //
-  // Orden garantizado:
-  //   1. JwtAuthGuard  — valida el access token y puebla request.user
-  //   2. RolesGuard    — verifica @Roles() usando request.user.rol
-  //   3. TenantGuard   — inyecta req.tenantId y valida aislamiento multitenant
   providers: [
     AppService,
     { provide: APP_GUARD, useClass: JwtAuthGuard },
