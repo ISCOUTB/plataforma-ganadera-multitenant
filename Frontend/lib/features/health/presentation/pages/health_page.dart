@@ -5,8 +5,6 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import '../../../../core/widgets/section_header.dart';
 
-/// Hub del módulo Salud & Alertas.
-/// 3 cards de acceso rápido: Salud, Reproducción, Centro de alertas.
 class HealthPage extends StatelessWidget {
   const HealthPage({super.key});
 
@@ -45,6 +43,27 @@ class HealthPage extends StatelessWidget {
                   title: t.alertCenter,
                   description: t.alertCenterDescription,
                   onTap: () => context.push('/health/alertas'),
+                ),
+                const SizedBox(height: 14),
+                _HubCard(
+                  icon: PhosphorIcons.stethoscope(PhosphorIconsStyle.fill),
+                  title: 'Veterinarios',
+                  description: 'Contactos y agenda de visitas',
+                  onTap: () => context.push('/health/veterinarios'),
+                ),
+                const SizedBox(height: 14),
+                _HubCard(
+                  icon: PhosphorIcons.calendarBlank(PhosphorIconsStyle.fill),
+                  title: 'Citas',
+                  description: 'Programar y gestionar citas',
+                  onTap: () => context.push('/health/citas'),
+                ),
+                const SizedBox(height: 14),
+                _HubCard(
+                  icon: PhosphorIcons.firstAid(PhosphorIconsStyle.fill),
+                  title: 'Tratamientos',
+                  description: 'Historial clínico de animales',
+                  onTap: () => context.push('/health/tratamientos'),
                 ),
               ],
             ),
