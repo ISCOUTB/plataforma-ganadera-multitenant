@@ -10,6 +10,7 @@
  *   - ~3375 registros de salud (mezcla vencidos/pendientes/al día + historia)
  *   - ~1100 finanzas distribuidas en 60 meses con tendencia creciente
  *   - 30 eventos reproductivos
+ *   - 3 veterinarios con citas y tratamientos demo
  *
  * Diseño:
  *   - DataSource standalone (sin NestFactory) → más rápido, sin hooks.
@@ -93,21 +94,11 @@ function monthsBetween(from: Date, to: Date): number {
  *  - Hembra ≥24m → PRODUCCION.
  *  - Resto de machos ≥24m → SECA.
  */
-function inferEtapa(
-  genero: 'm' | 'h',
-  edadMeses: number,
-  finca: string,
-  raza: RazaKey,
-): EtapaProductiva {
-  if (genero === 'm' && edadMeses >= 12 && edadMeses < 24 && finca === 'F2') {
-    return EtapaProductiva.ENGORDE;
-  }
+function inferEtapa(genero: 'm' | 'h', edadMeses: number, finca: string, raza: RazaKey): EtapaProductiva {
+  if (genero === 'm' && edadMeses >= 12 && edadMeses < 24 && finca === 'F2') return EtapaProductiva.ENGORDE;
   if (edadMeses < 24) return EtapaProductiva.CRECIMIENTO;
   if (genero === 'h') return EtapaProductiva.PRODUCCION;
-  // Macho adulto.
-  if ((raza === 'Brahman' || raza === 'Angus') && Math.random() < 0.05) {
-    return EtapaProductiva.REPRODUCTOR;
-  }
+  if ((raza === 'Brahman' || raza === 'Angus') && Math.random() < 0.05) return EtapaProductiva.REPRODUCTOR;
   return EtapaProductiva.SECA;
 }
 
@@ -126,8 +117,7 @@ type RazaKey = keyof typeof RAZAS;
 
 /**
  * Peso coherente con edad y raza: crecimiento lineal desde el peso al
- * nacer hasta el peso adulto, con jitter ±8% para realismo. Garantiza
- * que un ternero no pese como un toro.
+ * nacer hasta el peso adulto, con jitter ±8% para realismo.
  */
 function pesoPorEdadRaza(razaKey: RazaKey, genero: 'm' | 'h', edadMeses: number): number {
   const r = RAZAS[razaKey];
@@ -140,24 +130,12 @@ function pesoPorEdadRaza(razaKey: RazaKey, genero: 'm' | 'h', edadMeses: number)
 }
 
 /**
- * Inserta `rows` en `chunks` de `size`. Devuelve la cantidad total insertada.
- * Usa createQueryBuilder().insert() para evitar hooks de TypeORM (más rápido).
+ * Inserta `rows` en chunks de `size`. Devuelve la cantidad total insertada.
  */
-async function bulkInsert<T>(
-  ds: DataSource,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  entity: any,
-  rows: T[],
-  size = 500,
-): Promise<number> {
+async function bulkInsert<T>(ds: DataSource, entity: any, rows: T[], size = 500): Promise<number> {
   for (let i = 0; i < rows.length; i += size) {
     const chunk = rows.slice(i, i + size);
-    await ds
-      .createQueryBuilder()
-      .insert()
-      .into(entity)
-      .values(chunk as object[])
-      .execute();
+    await ds.createQueryBuilder().insert().into(entity).values(chunk as object[]).execute();
   }
   return rows.length;
 }
@@ -168,6 +146,10 @@ async function truncateAll(ds: DataSource): Promise<void> {
   console.log('[seed] 1/10 TRUNCATE de todas las tablas...');
   await ds.query(`
     TRUNCATE TABLE
+      seguimientos_tratamiento,
+      tratamientos,
+      citas,
+      veterinarios,
       reproduccion,
       movimientos_animal,
       salud,
@@ -185,50 +167,21 @@ async function truncateAll(ds: DataSource): Promise<void> {
 async function seedAdmin(ds: DataSource): Promise<void> {
   console.log('[seed] 2/10 admin@farmlink.com (bcrypt admin123)...');
   const hash = bcrypt.hashSync('admin123', 10);
-  await ds
-    .createQueryBuilder()
-    .insert()
-    .into(Usuario)
-    .values({
-      email: 'admin@farmlink.com',
-      password: hash,
-      nombre: 'Camilo Anaya',
-      rol: Rol.ADMIN,
-      tenant_id: TENANT,
-    })
-    .execute();
+  await ds.createQueryBuilder().insert().into(Usuario).values({
+    email: 'admin@farmlink.com',
+    password: hash,
+    nombre: 'Camilo Anaya',
+    rol: Rol.ADMIN,
+    tenant_id: TENANT,
+  }).execute();
 }
 
 async function seedFincas(ds: DataSource): Promise<void> {
   console.log('[seed] 3/10 3 fincas (nombres largos para probar overflow)...');
   const rows: Partial<Finca>[] = [
-    {
-      pk_id_finca: 'F1',
-      nombre_finca: 'Hacienda Ganadera La Victoria del Sinú Medio S.A.S.',
-      ubicacion: 'Tierralta, Córdoba',
-      propietario: 'Camilo Anaya',
-      area_total: 520.5,
-      fecha_registro: new Date(2021, 0, 15),
-      tenant_id: TENANT,
-    },
-    {
-      pk_id_finca: 'F2',
-      nombre_finca: 'Finca Vista Hermosa El Rincón Andino',
-      ubicacion: 'Charalá, Santander',
-      propietario: 'Camilo Anaya',
-      area_total: 380.75,
-      fecha_registro: new Date(2021, 2, 3),
-      tenant_id: TENANT,
-    },
-    {
-      pk_id_finca: 'F3',
-      nombre_finca: 'El Oasis del Llano Oriental',
-      ubicacion: 'Puerto Gaitán, Meta',
-      propietario: 'Camilo Anaya',
-      area_total: 1240.25,
-      fecha_registro: new Date(2021, 5, 21),
-      tenant_id: TENANT,
-    },
+    { pk_id_finca: 'F1', nombre_finca: 'Hacienda Ganadera La Victoria del Sinú Medio S.A.S.', ubicacion: 'Tierralta, Córdoba', propietario: 'Camilo Anaya', area_total: 520.5, fecha_registro: new Date(2021, 0, 15), tenant_id: TENANT },
+    { pk_id_finca: 'F2', nombre_finca: 'Finca Vista Hermosa El Rincón Andino', ubicacion: 'Charalá, Santander', propietario: 'Camilo Anaya', area_total: 380.75, fecha_registro: new Date(2021, 2, 3), tenant_id: TENANT },
+    { pk_id_finca: 'F3', nombre_finca: 'El Oasis del Llano Oriental', ubicacion: 'Puerto Gaitán, Meta', propietario: 'Camilo Anaya', area_total: 1240.25, fecha_registro: new Date(2021, 5, 21), tenant_id: TENANT },
   ];
   await bulkInsert(ds, Finca, rows);
 }
@@ -237,31 +190,9 @@ async function seedPotreros(ds: DataSource): Promise<string[][]> {
   console.log('[seed] 4/10 18 potreros (6 por finca)...');
   const estados = ['activo', 'activo', 'activo', 'activo', 'en descanso', 'mantenimiento'];
   const nombresBase: Record<string, string[]> = {
-    F1: [
-      'Lote Alpha 1',
-      'Lote Alpha 2',
-      // Nombre extra-largo a propósito → probar truncado en farm_map_card.
-      'Potrero Lote Alpha Sector Norte de la Hacienda — Zona de Levante 2024',
-      'Pradera Sur',
-      'El Mango',
-      'Cerca del Río',
-    ],
-    F2: [
-      'Sector Beta 1',
-      'Sector Beta 2',
-      'Sector Beta 3',
-      'La Cumbre',
-      'Vega Alta',
-      'Llano Bajo',
-    ],
-    F3: [
-      'Llano Charly 1',
-      'Llano Charly 2',
-      'Llano Charly 3',
-      'Sabana Larga',
-      'Caño Verde',
-      'El Reposo',
-    ],
+    F1: ['Lote Alpha 1', 'Lote Alpha 2', 'Potrero Lote Alpha Sector Norte de la Hacienda — Zona de Levante 2024', 'Pradera Sur', 'El Mango', 'Cerca del Río'],
+    F2: ['Sector Beta 1', 'Sector Beta 2', 'Sector Beta 3', 'La Cumbre', 'Vega Alta', 'Llano Bajo'],
+    F3: ['Llano Charly 1', 'Llano Charly 2', 'Llano Charly 3', 'Sabana Larga', 'Caño Verde', 'El Reposo'],
   };
   const rows: Record<string, unknown>[] = [];
   const idsPorFinca: string[][] = [[], [], []];
@@ -280,8 +211,6 @@ async function seedPotreros(ds: DataSource): Promise<string[][]> {
         fecha_rotacion: randDateBetween(addMonths(HOY, -4), HOY),
         fecha_proxima_rotacion: addDays(HOY, randInt(15, 90)),
         tenant_id: TENANT,
-        // FK declarada con @JoinColumn({name:'fk_id_finca'}) — el QueryBuilder
-        // mapea solo por propiedad de la relación, no por nombre de columna.
         finca: { pk_id_finca: finca },
       });
     }
@@ -297,132 +226,70 @@ interface BovinoSembrado {
   fechaIngreso: Date;
   fechaSalida: Date | null;
   genero: 'm' | 'h';
-  // True si el animal salió del inventario (VENDIDO o MUERTO). Lo usan
-  // movimientos/reproducción para no generar eventos posteriores a la salida.
+  // True si el animal salió del inventario (VENDIDO o MUERTO).
   inactivo: boolean;
 }
 
-async function seedBovinos(
-  ds: DataSource,
-  potrerosPorFinca: string[][],
-): Promise<BovinoSembrado[]> {
-  console.log(
-    `[seed] 5/10 ${ANIMALES_POR_FINCA * FINCAS_IDS.length} bovinos (cronología y peso coherentes con edad/raza)...`,
-  );
+async function seedBovinos(ds: DataSource, potrerosPorFinca: string[][]): Promise<BovinoSembrado[]> {
+  console.log(`[seed] 5/10 ${ANIMALES_POR_FINCA * FINCAS_IDS.length} bovinos (cronología y peso coherentes con edad/raza)...`);
   const razaKeys = Object.keys(RAZAS) as RazaKey[];
   const rows: Record<string, unknown>[] = [];
   let bovIdx = 0;
 
   for (let fi = 0; fi < FINCAS_IDS.length; fi++) {
     const finca = FINCAS_IDS[fi];
-    // Integridad de relaciones: el potrero asignado SIEMPRE pertenece
-    // a esta finca (no se cruza ninguna FK entre F1/F2/F3).
     const potrerosDeEstaFinca = potrerosPorFinca[fi];
     for (let i = 0; i < ANIMALES_POR_FINCA; i++) {
       bovIdx++;
       const genero: 'm' | 'h' = Math.random() < 0.8 ? 'h' : 'm';
       const razaKey = pick(razaKeys);
-
-      // Nacimiento distribuido 2018-2023 (mantiene mezcla joven/adulto).
-      const fechaNacimiento = randDateBetween(
-        new Date(2018, 0, 1),
-        new Date(2023, 11, 31),
-      );
-
-      // R2/R3 — origen determina cómo se calcula fecha_ingreso.
+      const fechaNacimiento = randDateBetween(new Date(2018, 0, 1), new Date(2023, 11, 31));
       const origen = pick(['compra', 'nacimiento', 'compra'] as const);
       let fechaIngreso: Date;
       if (origen === 'nacimiento') {
         fechaIngreso = fechaNacimiento;
       } else {
         const minIng = addMonths(fechaNacimiento, 1);
-        const maxIng = new Date(
-          Math.min(
-            addMonths(fechaNacimiento, 60).getTime(),
-            addMonths(HOY, -2).getTime(),
-          ),
-        );
-        fechaIngreso =
-          maxIng.getTime() > minIng.getTime()
-            ? randDateBetween(minIng, maxIng)
-            : minIng;
+        const maxIng = new Date(Math.min(addMonths(fechaNacimiento, 60).getTime(), addMonths(HOY, -2).getTime()));
+        fechaIngreso = maxIng.getTime() > minIng.getTime() ? randDateBetween(minIng, maxIng) : minIng;
       }
-
-      // Estado del animal:
-      //   R9 — 2% de probabilidad de MUERTO (precio/comprador null).
-      //   R4 — primeros 30 índices candidatos a VENDIDO si llevan ≥6m.
-      //   El resto, ACTIVO.
-      // MUERTO tiene prioridad sobre VENDIDO (un animal muerto no se vende).
       const seisMesesDesdeIngreso = addMonths(fechaIngreso, 6);
       const cumpleVentana = seisMesesDesdeIngreso.getTime() < HOY.getTime();
       const muerto = cumpleVentana && Math.random() < 0.02;
       const vendido = !muerto && i < 30 && cumpleVentana;
       let estado: EstadoAnimal = EstadoAnimal.ACTIVO;
       let fechaSalida: Date | null = null;
-      if (muerto) {
-        estado = EstadoAnimal.MUERTO;
-        fechaSalida = randDateBetween(seisMesesDesdeIngreso, HOY);
-      } else if (vendido) {
-        estado = EstadoAnimal.VENDIDO;
-        fechaSalida = randDateBetween(seisMesesDesdeIngreso, HOY);
-      }
-
-      // R6/R7 — edad al corte (fecha_salida si tiene, HOY si activo).
+      if (muerto) { estado = EstadoAnimal.MUERTO; fechaSalida = randDateBetween(seisMesesDesdeIngreso, HOY); }
+      else if (vendido) { estado = EstadoAnimal.VENDIDO; fechaSalida = randDateBetween(seisMesesDesdeIngreso, HOY); }
       const fechaCorte = fechaSalida ?? HOY;
       const edadMeses = monthsBetween(fechaNacimiento, fechaCorte);
-      // R10 — etapa puede ser ENGORDE (macho 12-24m en F2) o
-      // REPRODUCTOR (macho ≥24m, raza Brahman/Angus, prob. 5%).
       const etapa = inferEtapa(genero, edadMeses, finca, razaKey);
-
-      // R8 — peso coherente con edad y raza.
       const peso = pesoPorEdadRaza(razaKey, genero, edadMeses);
-
       rows.push({
         numero_identificacion: `BOV-${bovIdx}`,
         fecha_nacimiento: isoDate(fechaNacimiento),
         edad_actual: edadMeses,
-        genero,
-        peso,
-        raza: razaKey,
-        origen,
+        genero, peso, raza: razaKey, origen,
         fecha_ingreso: isoDate(fechaIngreso),
         fecha_salida: fechaSalida ? isoDate(fechaSalida) : null,
-        etapa_productiva: etapa,
-        estado,
-        // R5/R9 — solo VENDIDO tiene precio_venta y comprador.
+        etapa_productiva: etapa, estado,
         precio_venta: estado === EstadoAnimal.VENDIDO ? randDecimal(1_800_000, 4_500_000, 2) : null,
         comprador: estado === EstadoAnimal.VENDIDO ? 'Frigorífico Demo S.A.S.' : null,
         tenant_id: TENANT,
-        // Las columnas FK son auto-generadas por TypeORM como
-        // `fincaPkIdFinca` / `potreroPkIdPotrero`, pero el QueryBuilder
-        // las mapea solo a través de la propiedad de la relación. Pasar
-        // las columnas planas con esos nombres NO funciona — quedan
-        // como NULL en la BD. La forma correcta es pasar el objeto
-        // parcial de la relación con el PK referenciado.
         finca: { pk_id_finca: finca },
         potrero: { pk_id_potrero: pick(potrerosDeEstaFinca) },
       });
     }
   }
 
-  // Inserción con RETURNING id para capturar las PKs auto-generadas en orden.
   const idsCapturados: number[] = [];
   const chunkSize = 200;
   for (let i = 0; i < rows.length; i += chunkSize) {
     const chunk = rows.slice(i, i + chunkSize);
-    const result = await ds
-      .createQueryBuilder()
-      .insert()
-      .into(Animal)
-      .values(chunk as object[])
-      .returning(['id'])
-      .execute();
-    // result.raw es un array de { id: number } (Postgres devuelve en orden).
+    const result = await ds.createQueryBuilder().insert().into(Animal).values(chunk as object[]).returning(['id']).execute();
     for (const r of result.raw as { id: number }[]) idsCapturados.push(r.id);
   }
 
-  // Reconstruir el array de BovinoSembrado emparejando por índice
-  // (el orden de RETURNING coincide con el de VALUES en Postgres).
   const sembrados: BovinoSembrado[] = [];
   for (let i = 0; i < rows.length; i++) {
     const r = rows[i];
@@ -439,25 +306,11 @@ async function seedBovinos(
   return sembrados;
 }
 
-async function seedMovimientos(
-  ds: DataSource,
-  bovinos: BovinoSembrado[],
-  potrerosPorFinca: string[][],
-): Promise<number> {
+async function seedMovimientos(ds: DataSource, bovinos: BovinoSembrado[], potrerosPorFinca: string[][]): Promise<number> {
   console.log(`[seed] 6/10 ${bovinos.length * MOVS_POR_ANIMAL} movimientos (trazabilidad)...`);
-  const motivos = [
-    'Rotación de pastoreo',
-    'Reagrupación por etapa',
-    'Aislamiento sanitario',
-    'Cambio por sobrepastoreo',
-    'Reagrupación reproductiva',
-    'Movimiento por inundación',
-    'Rotación programada',
-    'Separación por edad',
-  ];
+  const motivos = ['Rotación de pastoreo', 'Reagrupación por etapa', 'Aislamiento sanitario', 'Cambio por sobrepastoreo', 'Reagrupación reproductiva', 'Movimiento por inundación', 'Rotación programada', 'Separación por edad'];
   const fincaIdx: Record<string, number> = { F1: 0, F2: 1, F3: 2 };
   const rows: Record<string, unknown>[] = [];
-
   for (const b of bovinos) {
     const potreros = potrerosPorFinca[fincaIdx[b.finca]];
     const desde = b.fechaIngreso;
@@ -468,119 +321,52 @@ async function seedMovimientos(
       const fraccion = (m + 1) / (MOVS_POR_ANIMAL + 1);
       const tMov = desde.getTime() + fraccion * (hasta.getTime() - desde.getTime());
       const fecha = new Date(tMov);
-      // Destino aleatorio distinto al origen actual.
       let destino = pick(potreros);
       let safety = 4;
       while (destino === origen && safety-- > 0) destino = pick(potreros);
-      rows.push({
-        fecha: isoDate(fecha),
-        motivo: pick(motivos),
-        tenant_id: TENANT,
-        animal: { id: b.id },
-        potreroOrigen: { pk_id_potrero: origen },
-        potreroDestino: { pk_id_potrero: destino },
-      });
+      rows.push({ fecha: isoDate(fecha), motivo: pick(motivos), tenant_id: TENANT, animal: { id: b.id }, potreroOrigen: { pk_id_potrero: origen }, potreroDestino: { pk_id_potrero: destino } });
       origen = destino;
     }
   }
-
   await bulkInsert(ds, MovimientoAnimal, rows, 500);
   return rows.length;
 }
 
-interface SaludCounts {
-  vencidos: number;
-  pendientes: number;
-  alDia: number;
-  historicos: number;
-}
+interface SaludCounts { vencidos: number; pendientes: number; alDia: number; historicos: number; }
 
-async function seedSalud(
-  ds: DataSource,
-  bovinos: BovinoSembrado[],
-): Promise<SaludCounts> {
+async function seedSalud(ds: DataSource, bovinos: BovinoSembrado[]): Promise<SaludCounts> {
   console.log('[seed] 7/10 salud (vencidos / pendientes / al día + historial 5y)...');
   const tipos = ['vacunacion', 'vitaminas', 'desparasitacion', 'enfermedad'];
-  const productos = [
-    'Aftosa',
-    'Brucelosis',
-    'Ivermectina',
-    'Vitamina B12',
-    'Antiparasitario',
-    'Triple bovina',
-    'Bacterina',
-  ];
+  const productos = ['Aftosa', 'Brucelosis', 'Ivermectina', 'Vitamina B12', 'Antiparasitario', 'Triple bovina', 'Bacterina'];
   const rows: Record<string, unknown>[] = [];
   const counts: SaludCounts = { vencidos: 0, pendientes: 0, alDia: 0, historicos: 0 };
-
   for (const b of bovinos) {
     const r = Math.random();
     let proximaOff: number;
-    if (r < 0.3) {
-      proximaOff = -randInt(1, 60); // vencido
-      counts.vencidos++;
-    } else if (r < 0.5) {
-      proximaOff = randInt(1, 14); // pendiente
-      counts.pendientes++;
-    } else {
-      proximaOff = randInt(45, 365); // al día
-      counts.alDia++;
-    }
+    if (r < 0.3) { proximaOff = -randInt(1, 60); counts.vencidos++; }
+    else if (r < 0.5) { proximaOff = randInt(1, 14); counts.pendientes++; }
+    else { proximaOff = randInt(45, 365); counts.alDia++; }
     const proxima = addDays(HOY, proximaOff);
     const aplicacion = addDays(proxima, -randInt(120, 240));
-    rows.push({
-      tipo_intervencion: pick(tipos),
-      producto_aplicado: pick(productos),
-      fecha_aplicacion: isoDate(aplicacion),
-      fecha_proxima_aplicacion: isoDate(proxima),
-      costo: randDecimal(15000, 85000, 2),
-      tenant_id: TENANT,
-      animal: { id: b.id },
-    });
-
-    // 2 registros históricos extras distribuidos en su ventana de vida
-    // — alimenta el sparkline `salud` del Bento.
+    rows.push({ tipo_intervencion: pick(tipos), producto_aplicado: pick(productos), fecha_aplicacion: isoDate(aplicacion), fecha_proxima_aplicacion: isoDate(proxima), costo: randDecimal(15000, 85000, 2), tenant_id: TENANT, animal: { id: b.id } });
     const vidaInicio = b.fechaIngreso;
     const vidaFin = b.fechaSalida ?? HOY;
     for (let h = 0; h < 2; h++) {
       const apl = randDateBetween(vidaInicio, vidaFin);
-      rows.push({
-        tipo_intervencion: pick(tipos),
-        producto_aplicado: pick(productos),
-        fecha_aplicacion: isoDate(apl),
-        fecha_proxima_aplicacion: isoDate(addDays(apl, randInt(60, 240))),
-        costo: randDecimal(12000, 95000, 2),
-        tenant_id: TENANT,
-        animal: { id: b.id },
-      });
+      rows.push({ tipo_intervencion: pick(tipos), producto_aplicado: pick(productos), fecha_aplicacion: isoDate(apl), fecha_proxima_aplicacion: isoDate(addDays(apl, randInt(60, 240))), costo: randDecimal(12000, 95000, 2), tenant_id: TENANT, animal: { id: b.id } });
       counts.historicos++;
     }
   }
-
   await bulkInsert(ds, Salud, rows, 500);
   return counts;
 }
 
 async function seedFinanzas(ds: DataSource): Promise<{ ingresos: number; gastos: number }> {
   console.log('[seed] 8/10 finanzas (60 meses × 3 fincas, tendencia creciente)...');
-  const ingresoConceptos = [
-    ['Venta de leche', 'venta_leche'],
-    ['Venta de novillos', 'venta_ganado'],
-    ['Venta de quesos artesanales', 'venta_leche'],
-  ];
-  const gastoConceptos = [
-    ['Nómina de vaqueros', 'nomina'],
-    ['Insumos agropecuarios', 'insumos'],
-    ['Alimento concentrado', 'alimento'],
-    ['Veterinaria y medicina', 'veterinaria'],
-    ['Mantenimiento de cercas', 'insumos'],
-  ];
-
+  const ingresoConceptos = [['Venta de leche', 'venta_leche'], ['Venta de novillos', 'venta_ganado'], ['Venta de quesos artesanales', 'venta_leche']];
+  const gastoConceptos = [['Nómina de vaqueros', 'nomina'], ['Insumos agropecuarios', 'insumos'], ['Alimento concentrado', 'alimento'], ['Veterinaria y medicina', 'veterinaria'], ['Mantenimiento de cercas', 'insumos']];
   const rows: Record<string, unknown>[] = [];
-  let seq = 0;
-  let ingresos = 0;
-  let gastos = 0;
-
+  let seq = 0; let ingresos = 0; let gastos = 0;
   for (let year = 2021; year <= 2026; year++) {
     const yearFactor = 1 + 0.08 * (year - 2021);
     const lastMonth = year === 2026 ? 4 : 12;
@@ -596,45 +382,23 @@ async function seedFinanzas(ds: DataSource): Promise<{ ingresos: number; gastos:
           if (esIngreso) {
             const [concepto, categoria] = pick(ingresoConceptos);
             const monto = randDecimal(2_500_000, 15_000_000, 2) * yearFactor * ingresosFactor;
-            rows.push({
-              pk_id_finanza: `FIN-${++seq}`,
-              tipo_movimiento: 'ingreso',
-              concepto,
-              categoria,
-              monto: Math.round(monto * 100) / 100,
-              fecha: isoDate(fecha),
-              tenant_id: TENANT,
-              finca: { pk_id_finca: finca },
-            });
+            rows.push({ pk_id_finanza: `FIN-${++seq}`, tipo_movimiento: 'ingreso', concepto, categoria, monto: Math.round(monto * 100) / 100, fecha: isoDate(fecha), tenant_id: TENANT, finca: { pk_id_finca: finca } });
             ingresos++;
           } else {
             const [concepto, categoria] = pick(gastoConceptos);
             const monto = randDecimal(300_000, 3_800_000, 2) * yearFactor * gastosFactor;
-            rows.push({
-              pk_id_finanza: `FIN-${++seq}`,
-              tipo_movimiento: 'gasto',
-              concepto,
-              categoria,
-              monto: Math.round(monto * 100) / 100,
-              fecha: isoDate(fecha),
-              tenant_id: TENANT,
-              finca: { pk_id_finca: finca },
-            });
+            rows.push({ pk_id_finanza: `FIN-${++seq}`, tipo_movimiento: 'gasto', concepto, categoria, monto: Math.round(monto * 100) / 100, fecha: isoDate(fecha), tenant_id: TENANT, finca: { pk_id_finca: finca } });
             gastos++;
           }
         }
       }
     }
   }
-
   await bulkInsert(ds, Finanza, rows, 500);
   return { ingresos, gastos };
 }
 
-async function seedReproduccion(
-  ds: DataSource,
-  bovinos: BovinoSembrado[],
-): Promise<number> {
+async function seedReproduccion(ds: DataSource, bovinos: BovinoSembrado[]): Promise<number> {
   console.log('[seed] 9/10 reproduccion (30 eventos)...');
   const hembras = bovinos.filter((b) => b.genero === 'h' && !b.inactivo).slice(0, 30);
   const rows: Record<string, unknown>[] = [];
@@ -648,14 +412,51 @@ async function seedReproduccion(
       en_celo: enCelo,
       preñada: !enCelo,
       numero_crias: enCelo ? null : 1,
-      fecha_estimado_parto: enCelo
-        ? null
-        : isoDate(addDays(HOY, randInt(30, 270))),
+      fecha_estimado_parto: enCelo ? null : isoDate(addDays(HOY, randInt(30, 270))),
       tenant_id: TENANT,
     });
   });
   await bulkInsert(ds, Reproduccion, rows);
   return rows.length;
+}
+
+async function seedVeterinarios(ds: DataSource, bovinos: BovinoSembrado[]): Promise<number> {
+  console.log('[seed] Veterinarios, citas y tratamientos demo...');
+
+  const vets = await ds.getRepository('veterinarios').save([
+    { nombre: 'Dr. Carlos Medina', especialidad: 'Medicina bovina', telefono: '3001234567', email: 'carlos.medina@vet.com', tenant_id: TENANT },
+    { nombre: 'Dra. Ana Robledo', especialidad: 'Reproducción animal', telefono: '3109876543', email: 'ana.robledo@vet.com', tenant_id: TENANT },
+    { nombre: 'Dr. Jorge Ospina', especialidad: 'Cirugía veterinaria', telefono: '3207654321', email: 'jorge.ospina@vet.com', tenant_id: TENANT },
+  ]);
+
+  await ds.getRepository('citas').save([
+    { tipo: 'vacunacion', estado: 'pendiente', alcance: 'potrero', fecha_hora: addDays(HOY, 3), fk_id_veterinario: vets[0].id, recordatorio_dias: 1, notas: 'Vacunación aftosa lote norte', tenant_id: TENANT },
+    { tipo: 'revision_general', estado: 'pendiente', alcance: 'animal', fecha_hora: addDays(HOY, 7), fk_id_veterinario: vets[1].id, recordatorio_dias: 2, notas: 'Revisión reproductiva bovinos hembra', tenant_id: TENANT },
+    { tipo: 'desparasitacion', estado: 'completada', alcance: 'potrero', fecha_hora: addDays(HOY, -10), fk_id_veterinario: vets[0].id, notas: 'Desparasitación interna y externa', tenant_id: TENANT },
+    { tipo: 'emergencia', estado: 'completada', alcance: 'animal', fecha_hora: addDays(HOY, -5), fk_id_veterinario: vets[2].id, notas: 'Animal con cólico severo', tenant_id: TENANT },
+    { tipo: 'parto_asistido', estado: 'pendiente', alcance: 'animal', fecha_hora: addDays(HOY, 14), fk_id_veterinario: vets[1].id, recordatorio_dias: 3, tenant_id: TENANT },
+  ]);
+
+  const primerBovino = bovinos.find(b => !b.inactivo);
+  if (primerBovino) {
+    const tratamiento = await ds.getRepository('tratamientos').save({
+      fk_id_bovino: primerBovino.id,
+      diagnostico: 'Neumonía bacteriana — tratamiento con antibióticos',
+      fecha_inicio: isoDate(addDays(HOY, -15)),
+      fecha_fin_estimada: isoDate(addDays(HOY, 5)),
+      estado: 'en_curso',
+      fk_id_veterinario: vets[0].id,
+      tenant_id: TENANT,
+    });
+
+    await ds.getRepository('seguimientos_tratamiento').save([
+      { fk_id_tratamiento: tratamiento.id, observacion: 'Inicio de tratamiento con oxitetraciclina. Animal con fiebre 40.2°C.', registrado_por: 'Dr. Carlos Medina' },
+      { fk_id_tratamiento: tratamiento.id, observacion: 'Día 5: fiebre bajó a 38.8°C. Mejora visible en respiración. Continuar antibiótico.', registrado_por: 'Dr. Carlos Medina' },
+      { fk_id_tratamiento: tratamiento.id, observacion: 'Día 10: animal estable, comiendo bien. Se reduce dosis.', registrado_por: 'Admin' },
+    ]);
+  }
+
+  return vets.length;
 }
 
 // ---------------- Orquestador ----------------
@@ -670,6 +471,7 @@ export async function runSeed(ds: DataSource): Promise<void> {
   const salud = await seedSalud(ds, bovinos);
   const finanzas = await seedFinanzas(ds);
   const nRepro = await seedReproduccion(ds, bovinos);
+  const nVets = await seedVeterinarios(ds, bovinos);
 
   console.log('[seed] 10/10 resumen');
   console.log('+----------------------------------------------------+');
@@ -686,5 +488,6 @@ export async function runSeed(ds: DataSource): Promise<void> {
   console.log(`  Finanzas — ingresos...........: ${finanzas.ingresos}`);
   console.log(`  Finanzas — gastos.............: ${finanzas.gastos}`);
   console.log(`  Reproducción..................: ${nRepro}`);
+  console.log(`  Veterinarios..................: ${nVets}`);
   console.log('+----------------------------------------------------+');
 }
