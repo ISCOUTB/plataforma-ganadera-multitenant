@@ -283,83 +283,139 @@ class _DateTimePickerDialogState extends State<_DateTimePickerDialog> {
     final tt = Theme.of(context).textTheme;
     final slots = _slots;
     final now = DateTime.now();
+    final isMobile = MediaQuery.of(context).size.width < 500;
 
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: Container(
-        width: 560,
-        height: 460,
-        padding: const EdgeInsets.all(20),
+        width: isMobile ? MediaQuery.of(context).size.width * 0.95 : 560,
+        height: isMobile ? MediaQuery.of(context).size.height * 0.85 : 460,
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('Seleccionar fecha y hora', style: tt.titleMedium?.copyWith(fontWeight: FontWeight.w800)),
-            const SizedBox(height: 16),
-            Expanded(
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    flex: 3,
-                    child: PageView.builder(
-                      controller: _pageController,
-                      itemCount: 12,
-                      itemBuilder: (_, page) {
-                        final month = DateTime(now.year, now.month + page);
-                        return _buildCalendar(month, cs, tt);
-                      },
-                    ),
+            const SizedBox(height: 12),
+            if (isMobile) ...[
+              Expanded(
+                flex: 3,
+                child: PageView.builder(
+                  controller: _pageController,
+                  itemCount: 12,
+                  itemBuilder: (_, page) {
+                    final month = DateTime(now.year, now.month + page);
+                    return _buildCalendar(month, cs, tt);
+                  },
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                '${_selectedDate.day} ${_monthName(_selectedDate.month)}',
+                style: tt.titleSmall?.copyWith(fontWeight: FontWeight.w700),
+              ),
+              const SizedBox(height: 8),
+              Expanded(
+                flex: 2,
+                child: GridView.builder(
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 4,
+                    mainAxisSpacing: 6,
+                    crossAxisSpacing: 6,
+                    childAspectRatio: 2.2,
                   ),
-                  const SizedBox(width: 16),
-                  Container(width: 1, color: cs.outlineVariant),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    flex: 2,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          '${_selectedDate.day} ${_monthName(_selectedDate.month)}',
-                          style: tt.titleSmall?.copyWith(fontWeight: FontWeight.w700),
+                  itemCount: slots.length,
+                  itemBuilder: (_, i) {
+                    final slot = slots[i];
+                    final isSelected = _selectedTime == slot;
+                    return GestureDetector(
+                      onTap: () => setState(() => _selectedTime = slot),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: isSelected ? cs.primary : Colors.transparent,
+                          border: Border.all(color: isSelected ? cs.primary : cs.outlineVariant),
+                          borderRadius: BorderRadius.circular(8),
                         ),
-                        const SizedBox(height: 8),
-                        Expanded(
-                          child: ListView.separated(
-                            itemCount: slots.length,
-                            separatorBuilder: (_, __) => const SizedBox(height: 6),
-                            itemBuilder: (_, i) {
-                              final slot = slots[i];
-                              final isSelected = _selectedTime == slot;
-                              return GestureDetector(
-                                onTap: () => setState(() => _selectedTime = slot),
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(vertical: 10),
-                                  decoration: BoxDecoration(
-                                    color: isSelected ? cs.primary : Colors.transparent,
-                                    border: Border.all(color: isSelected ? cs.primary : cs.outlineVariant),
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: Center(
-                                    child: Text(
-                                      _formatSlot(slot),
-                                      style: tt.bodySmall?.copyWith(
-                                        color: isSelected ? cs.onPrimary : cs.onSurface,
-                                        fontWeight: FontWeight.w600,
+                        child: Center(
+                          child: Text(
+                            _formatSlot(slot),
+                            style: tt.labelSmall?.copyWith(
+                              color: isSelected ? cs.onPrimary : cs.onSurface,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ] else ...[
+              Expanded(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      flex: 3,
+                      child: PageView.builder(
+                        controller: _pageController,
+                        itemCount: 12,
+                        itemBuilder: (_, page) {
+                          final month = DateTime(now.year, now.month + page);
+                          return _buildCalendar(month, cs, tt);
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Container(width: 1, color: cs.outlineVariant),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      flex: 2,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '${_selectedDate.day} ${_monthName(_selectedDate.month)}',
+                            style: tt.titleSmall?.copyWith(fontWeight: FontWeight.w700),
+                          ),
+                          const SizedBox(height: 8),
+                          Expanded(
+                            child: ListView.separated(
+                              itemCount: slots.length,
+                              separatorBuilder: (_, __) => const SizedBox(height: 6),
+                              itemBuilder: (_, i) {
+                                final slot = slots[i];
+                                final isSelected = _selectedTime == slot;
+                                return GestureDetector(
+                                  onTap: () => setState(() => _selectedTime = slot),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(vertical: 10),
+                                    decoration: BoxDecoration(
+                                      color: isSelected ? cs.primary : Colors.transparent,
+                                      border: Border.all(color: isSelected ? cs.primary : cs.outlineVariant),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Center(
+                                      child: Text(
+                                        _formatSlot(slot),
+                                        style: tt.bodySmall?.copyWith(
+                                          color: isSelected ? cs.onPrimary : cs.onSurface,
+                                          fontWeight: FontWeight.w600,
+                                        ),
                                       ),
                                     ),
                                   ),
-                                ),
-                              );
-                            },
+                                );
+                              },
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-            const SizedBox(height: 16),
+            ],
+            const SizedBox(height: 12),
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
