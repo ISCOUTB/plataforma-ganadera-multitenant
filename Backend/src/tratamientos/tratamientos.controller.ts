@@ -30,6 +30,16 @@ export class TratamientosController {
     return this.service.create(dto, user.tenantId);
   }
 
+  @Patch('seguimientos/:seguimientoId')
+  updateSeguimiento(@Param('seguimientoId', ParseIntPipe) seguimientoId: number, @Body() dto: { observacion: string }) {
+    return this.service.updateSeguimiento(seguimientoId, dto);
+  }
+
+  @Delete('seguimientos/:seguimientoId')
+  deleteSeguimiento(@Param('seguimientoId', ParseIntPipe) seguimientoId: number) {
+    return this.service.deleteSeguimiento(seguimientoId);
+  }
+
   @Patch(':id')
   update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateTratamientoDto, @CurrentUser() user: any) {
     return this.service.update(id, dto, user.tenantId);
