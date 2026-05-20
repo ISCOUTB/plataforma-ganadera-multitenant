@@ -1,0 +1,11 @@
+# Backend-IA-Proxy/.gitignore
+.env
+.env.local
+*.pyc
+__pycache__/
+.pytest_cache/
+dist/
+build/
+*.egg-info/
+.venv/
+venv/
