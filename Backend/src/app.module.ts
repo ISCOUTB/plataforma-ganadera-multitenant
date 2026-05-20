@@ -37,7 +37,9 @@ import { TratamientosModule } from './tratamientos/tratamientos.module';
 import { Veterinario } from './veterinarios/entities/veterinario.entity';
 import { Cita } from './citas/entities/cita.entity';
 import { Tratamiento, SeguimientoTratamiento } from './tratamientos/entities/tratamiento.entity';
-
+import { ProveedoresModule } from './proveedores/proveedores.module';
+import { Proveedor } from './proveedores/entities/proveedor.entity';
+import { ProveedorPrecio } from './proveedores/entities/proveedor-precio.entity';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -56,7 +58,7 @@ import { Tratamiento, SeguimientoTratamiento } from './tratamientos/entities/tra
           Usuario, Finca, Animal, Potrero,
           Alimento, Salud, Reproduccion, Finanza,
           BovinoAlimento, MovimientoAnimal,
-          Veterinario, Cita, Tratamiento, SeguimientoTratamiento
+          Veterinario, Cita, Tratamiento, SeguimientoTratamiento,Proveedor, ProveedorPrecio,
         ],
         synchronize: false,
         migrations: ['dist/migrations/*.js'],
@@ -82,6 +84,7 @@ import { Tratamiento, SeguimientoTratamiento } from './tratamientos/entities/tra
     VeterinariosModule,
     CitasModule,
     TratamientosModule,
+    ProveedoresModule,
   ],
   controllers: [AppController],
   providers: [
