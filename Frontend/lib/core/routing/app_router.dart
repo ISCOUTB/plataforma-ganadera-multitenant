@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../features/alertas/presentation/pages/alertas_page.dart';
+import '../../features/alimentos/presentation/pages/alimento_detail_page.dart';
 import '../../features/alimentos/presentation/pages/alimento_form_page.dart';
 import '../../features/alimentos/presentation/pages/alimentos_list_page.dart';
 import '../../features/animales/presentation/pages/animal_detail_page.dart';
@@ -47,6 +48,9 @@ import '../../features/citas/presentation/pages/cita_form_page.dart';
 import '../../features/citas/presentation/pages/cita_detail_page.dart';
 import '../../features/tratamientos/presentation/pages/tratamientos_list_page.dart';
 import '../../features/tratamientos/presentation/pages/tratamiento_detail_page.dart';
+import '../../features/proveedores/presentation/pages/proveedores_list_page.dart';
+import '../../features/proveedores/presentation/pages/proveedor_detail_page.dart';
+import '../../features/proveedores/presentation/pages/proveedor_form_page.dart';
 import 'home_shell.dart';
 import 'route_paths.dart';
 
@@ -290,6 +294,13 @@ GoRouter buildAppRouter(AuthBloc authBloc) {
                     path: ':id/edit',
                     builder: (context, state) => AlimentoFormPage(editId: state.pathParameters['id']),
                   ),
+                  GoRoute(
+                    path: ':id/detalle',
+                    builder: (context, state) => AlimentoDetailPage(
+                      alimentoId: state.pathParameters['id']!,
+                      tipoAlimento: state.uri.queryParameters['nombre'] ?? 'Alimento',
+                    ),
+                  ),
                 ],
               ),
               GoRoute(
@@ -297,6 +308,27 @@ GoRouter buildAppRouter(AuthBloc authBloc) {
                 builder: (_, _) => const MovimientosListPage(),
                 routes: [
                   GoRoute(path: 'new', builder: (_, _) => const MovimientoFormPage()),
+                ],
+              ),
+              GoRoute(
+                path: 'proveedores',
+                builder: (_, _) => const ProveedoresListPage(),
+                routes: [
+                  GoRoute(path: 'new', builder: (_, _) => const ProveedorFormPage()),
+                  GoRoute(
+                    path: ':id',
+                    builder: (context, state) => ProveedorDetailPage(
+                      proveedorId: int.parse(state.pathParameters['id']!),
+                    ),
+                    routes: [
+                      GoRoute(
+                        path: 'edit',
+                        builder: (context, state) => ProveedorFormPage(
+                          editId: int.parse(state.pathParameters['id']!),
+                        ),
+                      ),
+                    ],
+                  ),
                 ],
               ),
             ],
