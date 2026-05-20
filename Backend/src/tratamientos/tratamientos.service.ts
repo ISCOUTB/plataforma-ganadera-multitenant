@@ -61,4 +61,18 @@ export class TratamientosService {
     const s = this.seguimientoRepo.create({ ...dto, fk_id_tratamiento: id });
     return this.seguimientoRepo.save(s);
   }
+
+  async updateSeguimiento(seguimientoId: number, dto: { observacion: string }) {
+    const s = await this.seguimientoRepo.findOne({ where: { id: seguimientoId } });
+    if (!s) throw new NotFoundException('Seguimiento no encontrado');
+    s.observacion = dto.observacion;
+    return this.seguimientoRepo.save(s);
+  }
+
+  async deleteSeguimiento(seguimientoId: number) {
+    const s = await this.seguimientoRepo.findOne({ where: { id: seguimientoId } });
+    if (!s) throw new NotFoundException('Seguimiento no encontrado');
+    await this.seguimientoRepo.remove(s);
+    return { message: 'Seguimiento eliminado' };
+  }
 }
