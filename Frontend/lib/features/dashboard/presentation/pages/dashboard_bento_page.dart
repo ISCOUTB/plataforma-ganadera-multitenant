@@ -19,6 +19,7 @@ import '../widgets/export_pdf_button.dart';
 import '../widgets/demography_card.dart';
 import '../widgets/farm_map_card.dart';
 import '../widgets/finances_bar_card.dart';
+import '../widgets/proveedores_resumen_card.dart';
 import '../widgets/ganancia_card.dart';
 import '../widgets/gender_split_card.dart';
 import '../widgets/kpi_sparkline_card.dart';
@@ -197,6 +198,11 @@ class _DashboardBentoView extends StatelessWidget {
                                   .animate()
                                   .fadeIn(duration: 400.ms, delay: 160.ms)
                                   .slideY(begin: 0.05, end: 0),
+                            ),
+                            // Proveedores — resumen de mejores precios
+                            StaggeredGridTile.fit(
+                              crossAxisCellCount: cols,
+                              child: const ProveedoresResumenCard(),
                             ),
                             // Mapa visual de la finca (grid de potreros)
                             StaggeredGridTile.fit(
