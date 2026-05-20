@@ -5,8 +5,6 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import '../../../../core/widgets/section_header.dart';
 
-/// Hub del módulo de gestión económica y operativa:
-/// Finanzas, Alimentos y Movimientos entre potreros.
 class MoneyPage extends StatelessWidget {
   const MoneyPage({super.key});
 
@@ -45,6 +43,13 @@ class MoneyPage extends StatelessWidget {
                   title: t.movements,
                   description: t.movementsDescription,
                   onTap: () => context.push('/money/movimientos'),
+                ),
+                const SizedBox(height: 14),
+                _HubCard(
+                  icon: PhosphorIcons.truck(PhosphorIconsStyle.fill),
+                  title: 'Proveedores',
+                  description: 'Compara precios y gestiona proveedores',
+                  onTap: () => context.push('/money/proveedores'),
                 ),
               ],
             ),
