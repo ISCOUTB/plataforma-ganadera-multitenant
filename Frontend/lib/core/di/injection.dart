@@ -87,6 +87,10 @@ import '../../features/alimentos/data/repositories/alimento_repository_impl.dart
 import '../../features/alimentos/domain/repositories/alimento_repository.dart';
 import '../../features/alimentos/presentation/bloc/alimento_form_bloc.dart';
 import '../../features/alimentos/presentation/bloc/alimentos_list_bloc.dart';
+// Proveedores
+import '../../features/proveedores/data/datasources/proveedores_remote_datasource.dart';
+import '../../features/proveedores/data/repositories/proveedores_repository_impl.dart';
+import '../../features/proveedores/domain/repositories/proveedores_repository.dart';
 // Movimientos
 import '../../features/movimientos/data/datasources/movimiento_remote_datasource.dart';
 import '../../features/movimientos/data/repositories/movimiento_repository_impl.dart';
@@ -407,5 +411,13 @@ Future<void> configureDependencies() async {
   );
   getIt.registerFactory<TratamientosBloc>(
     () => TratamientosBloc(repository: getIt<TratamientosRepository>()),
+  );
+
+  // ---------- Proveedores ----------
+  getIt.registerLazySingleton<ProveedoresRemoteDataSource>(
+    () => ProveedoresRemoteDataSource(getIt<DioClient>().dio),
+  );
+  getIt.registerLazySingleton<ProveedoresRepository>(
+    () => ProveedoresRepositoryImpl(remote: getIt<ProveedoresRemoteDataSource>()),
   );
 }
