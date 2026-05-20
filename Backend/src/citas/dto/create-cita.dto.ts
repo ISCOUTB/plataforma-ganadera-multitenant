@@ -29,4 +29,8 @@ export class CreateCitaDto {
   @IsOptional()
   @IsNumber()
   recordatorio_dias?: number;
+
+  @IsOptional()
+  @IsEnum(EstadoCita)
+  estado?: EstadoCita;
 }
