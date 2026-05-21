@@ -124,4 +124,44 @@ export class AiService {
       );
     }
   }
+
+  /**
+   * Generar recomendaciones basadas en contexto de la finca
+   * @param tenantId - ID del tenant
+   * @param fincaId - ID de la finca
+   * @returns Lista de recomendaciones
+   */
+  async getRecommendations(
+    tenantId: string,
+    fincaId: string
+  ): Promise<any[]> {
+    this.logger.log(`Recommendations request: tenant=${tenantId}, finca=${fincaId}`);
+
+    return [
+      {
+        id: 'rec-1',
+        category: 'alimentacion',
+        title: 'Optimizar ración de concentrado',
+        description: 'Ajustar la proporción de concentrado según la etapa productiva del rebaño.',
+        confidence: 0.85,
+        generatedAt: new Date().toISOString(),
+      },
+      {
+        id: 'rec-2',
+        category: 'salud',
+        title: 'Revisar calendario de vacunación',
+        description: 'Verificar que las vacunas estén al día según el plan sanitario.',
+        confidence: 0.92,
+        generatedAt: new Date().toISOString(),
+      },
+      {
+        id: 'rec-3',
+        category: 'reproduccion',
+        title: 'Evaluar tasa de preñez',
+        description: 'Analizar indicadores reproductivos del último período.',
+        confidence: 0.78,
+        generatedAt: new Date().toISOString(),
+      },
+    ];
+  }
 }

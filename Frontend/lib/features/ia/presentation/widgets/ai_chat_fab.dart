@@ -12,10 +12,15 @@ class AiChatFab extends StatelessWidget {
   const AiChatFab({super.key});
 
   void _openChat(BuildContext context) {
+    final chatBloc = context.read<ChatBloc>();
+
     showDialog(
       context: context,
       barrierColor: Colors.black26,
-      builder: (_) => const _AiChatDialog(),
+      builder: (_) => BlocProvider<ChatBloc>.value(
+        value: chatBloc,
+        child: const _AiChatDialog(),
+      ),
     );
   }
 

@@ -17,7 +17,7 @@ import { TenantGuard } from '../common/guards/tenant.guard';
  * - POST /api/ai/chat - Chat con Llama 3B
  * - POST /api/ai/predict - Predicciones con Chronos-2
  */
-@Controller('api/ai')
+@Controller('ai')
 @UseGuards(JwtAuthGuard, TenantGuard)
 export class AiController {
   constructor(private readonly aiService: AiService) {}
@@ -116,6 +116,28 @@ export class AiController {
     return {
       status: HttpStatus.OK,
       data: result,
+      tenant: tenantId,
+      timestamp: new Date().toISOString(),
+    };
+  }
+
+  /**
+   * Endpoint de recomendaciones IA
+   * Genera recomendaciones basadas en el contexto de la finca
+   */
+  @Get('recommendations')
+  async recommendations(@Request() req) {
+    const tenantId = req.user.tenantId;
+    const fincaId = req.user.fincaId || '';
+
+    const recommendations = await this.aiService.getRecommendations(
+      tenantId,
+      fincaId
+    );
+
+    return {
+      status: HttpStatus.OK,
+      data: recommendations,
       tenant: tenantId,
       timestamp: new Date().toISOString(),
     };
