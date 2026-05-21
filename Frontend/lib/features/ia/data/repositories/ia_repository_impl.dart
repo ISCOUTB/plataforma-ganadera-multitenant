@@ -64,19 +64,20 @@ class IaRepositoryImpl implements IaRepository {
 
   @override
   Future<Either<AppFailure, List<Prediction>>> getPredictions({
+    required String metric,
+    required List<double> values,
     required String tenantId,
     required String fincaId,
+    int steps = 30,
   }) =>
       _guard(() async {
-        // Placeholder data - actual implementation would receive data as parameter
-        // This is a limitation of the current interface that doesn't accept data
-        const List<double> data = [];
         final model = await _remoteDataSource.getPredictions(
-          data: data,
+          metric: metric,
+          values: values,
           tenantId: tenantId,
           fincaId: fincaId,
+          steps: steps,
         );
-        // Models already extend entities, so we can return them directly in a list
         return [model as Prediction];
       });
 

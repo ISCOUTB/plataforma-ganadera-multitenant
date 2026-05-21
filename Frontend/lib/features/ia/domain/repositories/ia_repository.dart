@@ -34,8 +34,11 @@ abstract class IaRepository {
   ///
   /// Returns either a list of [Prediction] or an [AppFailure].
   Future<Either<AppFailure, List<Prediction>>> getPredictions({
+    required String metric,
+    required List<double> values,
     required String tenantId,
     required String fincaId,
+    int steps = 30,
   });
 
   /// Retrieves recommendations for a specific farm.

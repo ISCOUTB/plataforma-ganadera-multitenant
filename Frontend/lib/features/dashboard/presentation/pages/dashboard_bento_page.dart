@@ -26,9 +26,6 @@ import '../widgets/occupancy_card.dart';
 import '../widgets/recent_movements_card.dart';
 import '../widgets/top_animales_costosos_card.dart';
 import '../widgets/top_potreros_card.dart';
-import '../../../ia/presentation/widgets/ia_chat_card.dart';
-import '../../../ia/presentation/widgets/ia_predictions_card.dart';
-import '../../../ia/presentation/widgets/ia_recommendations_card.dart';
 
 class DashboardBentoPage extends StatelessWidget {
   const DashboardBentoPage({super.key});
@@ -241,30 +238,6 @@ class _DashboardBentoView extends StatelessWidget {
                               )
                                   .animate()
                                   .fadeIn(duration: 400.ms, delay: 280.ms)
-                                  .slideY(begin: 0.05, end: 0),
-                            ),
-                            // IA Chat — full en móvil, mitad en desktop
-                            StaggeredGridTile.fit(
-                              crossAxisCellCount: isWide ? 1 : cols,
-                              child: const IaChatCard()
-                                  .animate()
-                                  .fadeIn(duration: 400.ms, delay: 320.ms)
-                                  .slideY(begin: 0.05, end: 0),
-                            ),
-                            // IA Predicciones — full en móvil, mitad en desktop
-                            StaggeredGridTile.fit(
-                              crossAxisCellCount: isWide ? 1 : cols,
-                              child: const IaPredictionsCard()
-                                  .animate()
-                                  .fadeIn(duration: 400.ms, delay: 360.ms)
-                                  .slideY(begin: 0.05, end: 0),
-                            ),
-                            // IA Recomendaciones — full en móvil, mitad en desktop
-                            StaggeredGridTile.fit(
-                              crossAxisCellCount: isWide ? 1 : cols,
-                              child: const IaRecommendationsCard()
-                                  .animate()
-                                  .fadeIn(duration: 400.ms, delay: 400.ms)
                                   .slideY(begin: 0.05, end: 0),
                             ),
                           ],

@@ -16,10 +16,18 @@ class IaPredictionsCard extends StatelessWidget {
     final tenantId = context.read<AuthBloc>().state.user?.tenantId ?? '';
     final fincaId = context.read<FincasListBloc>().state.selectedFincaId ?? '';
 
+    final sampleValues = List<double>.generate(
+      15,
+      (i) => 200 + (i * 10) + (i % 3 == 0 ? 20 : -10),
+    );
+
     context.read<PredictionsBloc>().add(
           GetPredictionsEvent(
+            metric: 'weight',
+            values: sampleValues,
             tenantId: tenantId,
             fincaId: fincaId,
+            steps: 30,
           ),
         );
   }
@@ -94,9 +102,7 @@ class IaPredictionsCard extends StatelessWidget {
             child: BlocBuilder<PredictionsBloc, PredictionsState>(
               builder: (context, state) {
                 if (state is PredictionsLoadingState) {
-                  return const Center(
-                    child: CircularProgressIndicator(),
-                  );
+                  return const Center(child: CircularProgressIndicator());
                 }
 
                 if (state is PredictionsErrorState) {
@@ -104,18 +110,12 @@ class IaPredictionsCard extends StatelessWidget {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(
-                          Icons.error_outline_rounded,
-                          color: cs.error,
-                          size: 32,
-                        ),
+                        Icon(Icons.error_outline_rounded, color: cs.error, size: 32),
                         const SizedBox(height: 8),
                         Text(
                           state.message,
                           textAlign: TextAlign.center,
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: cs.error,
-                          ),
+                          style: theme.textTheme.bodySmall?.copyWith(color: cs.error),
                         ),
                         const SizedBox(height: 8),
                         TextButton(
@@ -127,8 +127,7 @@ class IaPredictionsCard extends StatelessWidget {
                   );
                 }
 
-                if (state is PredictionsSuccessState &&
-                    state.predictions.isEmpty) {
+                if (state is PredictionsSuccessState && state.predictions.isEmpty) {
                   return Center(
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
@@ -234,10 +233,7 @@ class _PredictionsList extends StatelessWidget {
                     ),
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 6,
-                      vertical: 2,
-                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                     decoration: BoxDecoration(
                       color: trendColor.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(999),

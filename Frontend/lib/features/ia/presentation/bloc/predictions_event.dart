@@ -6,19 +6,21 @@ sealed class PredictionsEvent extends Equatable {
   List<Object?> get props => [];
 }
 
-/// Event triggered when user wants predictions for a specific farm.
-///
-/// This event includes the tenant ID and finca ID
-/// needed to retrieve predictions through the AI service.
 class GetPredictionsEvent extends PredictionsEvent {
+  final String metric;
+  final List<double> values;
   final String tenantId;
   final String fincaId;
+  final int steps;
 
   const GetPredictionsEvent({
+    required this.metric,
+    required this.values,
     required this.tenantId,
     required this.fincaId,
+    this.steps = 30,
   });
 
   @override
-  List<Object?> get props => [tenantId, fincaId];
+  List<Object?> get props => [metric, values, tenantId, fincaId, steps];
 }

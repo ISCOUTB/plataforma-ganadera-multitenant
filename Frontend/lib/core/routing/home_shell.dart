@@ -19,6 +19,7 @@ import '../../features/salud/presentation/bloc/salud_list_bloc.dart';
 import '../../features/ia/presentation/bloc/chat_bloc.dart';
 import '../../features/ia/presentation/bloc/predictions_bloc.dart';
 import '../../features/ia/presentation/bloc/recommendations_bloc.dart';
+import '../../features/ia/presentation/widgets/ai_chat_fab.dart';
 import 'route_paths.dart';
 
 /// Cascarón común a todas las pantallas dentro del shell con bottom nav.
@@ -141,18 +142,23 @@ class HomeShell extends StatelessWidget {
             );
           }
         },
-        child: Scaffold(
-          body: child,
-          floatingActionButton: showFab
-              ? AppSquircleFab(onPressed: () => _openQuickCreate(context))
-              : null,
-          floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-          bottomNavigationBar: HomeBottomNav(
-            currentLocation: location,
-            onTap: (path) {
-              if (path != location) context.go(path);
-            },
-          ),
+        child: Stack(
+          children: [
+            Scaffold(
+              body: child,
+              floatingActionButton: showFab
+                  ? AppSquircleFab(onPressed: () => _openQuickCreate(context))
+                  : null,
+              floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+              bottomNavigationBar: HomeBottomNav(
+                currentLocation: location,
+                onTap: (path) {
+                  if (path != location) context.go(path);
+                },
+              ),
+            ),
+            if (showFab) const AiChatFab(),
+          ],
         ),
       ),
     );

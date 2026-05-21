@@ -5,30 +5,13 @@ import '../../../../core/error/failures.dart';
 import '../models/chat_message_model.dart';
 import '../models/prediction_model.dart';
 import '../models/recommendation_model.dart';
+import '../../domain/entities/chat_message.dart';
 
-/// Remote data source for AI-related operations.
-///
-/// This class handles all HTTP communication with the backend AI endpoints.
-/// All methods are designed to work within a multi-tenant architecture,
-/// including tenant identification in request headers.
 class IaRemoteDataSource {
   final Dio _dio;
 
   IaRemoteDataSource(this._dio);
 
-  /// Sends a chat message to the AI service.
-  ///
-  /// Makes a POST request to `/api/ai/chat` with the message and optional
-  /// chat history for context-aware responses.
-  ///
-  /// Parameters:
-  ///   - message: The user's message content
-  ///   - tenantId: The tenant identifier (added to headers)
-  ///   - fincaId: The farm identifier (not used in current endpoint but provided for consistency)
-  ///   - chatHistory: Optional list of previous messages for conversation context
-  ///
-  /// Returns a [ChatMessageModel] representing the AI response, or throws
-  /// an [AppFailure] if the operation fails.
   Future<ChatMessageModel> sendChatMessage({
     required String message,
     required String tenantId,
@@ -36,13 +19,21 @@ class IaRemoteDataSource {
     List<ChatMessageModel>? chatHistory,
   }) async {
     try {
+      final messages = <Map<String, dynamic>>[];
+      if (chatHistory != null && chatHistory.isNotEmpty) {
+        messages.addAll(chatHistory.map((m) => {
+          'role': m.role.apiValue,
+          'content': m.content,
+        }));
+      }
+      messages.add({
+        'role': 'user',
+        'content': message,
+      });
+
       final response = await _dio.post(
-        '/api/ai/chat',
-        data: {
-          'message': message,
-          if (chatHistory != null && chatHistory.isNotEmpty)
-            'chat_history': chatHistory.map((m) => m.toJson()).toList(),
-        },
+        '/ai/chat',
+        data: {'messages': messages},
         options: Options(
           headers: {
             'X-Tenant-ID': tenantId,
@@ -50,7 +41,19 @@ class IaRemoteDataSource {
         ),
       );
 
-      return ChatMessageModel.fromJson(response.data as Map<String, dynamic>);
+      final responseData = response.data as Map<String, dynamic>;
+      final responseWrapper = responseData['response'] as Map<String, dynamic>?;
+
+      if (responseWrapper != null) {
+        return ChatMessageModel.fromJson(responseWrapper);
+      }
+
+      return ChatMessageModel(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        role: ChatMessageRole.assistant,
+        content: responseData['response'] as String? ?? '',
+        timestamp: DateTime.now(),
+      );
     } on DioException catch (e) {
       throw ErrorMapper.fromDio(e);
     } catch (e) {
@@ -58,27 +61,20 @@ class IaRemoteDataSource {
     }
   }
 
-  /// Retrieves predictions from the AI service.
-  ///
-  /// Makes a POST request to `/api/ai/predict` with numerical data for analysis.
-  ///
-  /// Parameters:
-  ///   - data: List of numerical values to predict on
-  ///   - tenantId: The tenant identifier (added to headers)
-  ///   - fincaId: The farm identifier (not used in current endpoint but provided for consistency)
-  ///
-  /// Returns a [PredictionModel] containing prediction values, labels, and confidence,
-  /// or throws an [AppFailure] if the operation fails.
   Future<PredictionModel> getPredictions({
-    required List<double> data,
+    required String metric,
+    required List<double> values,
     required String tenantId,
     required String fincaId,
+    int steps = 30,
   }) async {
     try {
       final response = await _dio.post(
-        '/api/ai/predict',
+        '/ai/predict',
         data: {
-          'data': data,
+          'metric': metric,
+          'values': values,
+          'steps': steps,
         },
         options: Options(
           headers: {
@@ -87,7 +83,14 @@ class IaRemoteDataSource {
         ),
       );
 
-      return PredictionModel.fromJson(response.data as Map<String, dynamic>);
+      final responseData = response.data as Map<String, dynamic>;
+      final data = responseData['data'] as Map<String, dynamic>?;
+
+      if (data != null) {
+        return PredictionModel.fromJson(data);
+      }
+
+      return PredictionModel.fromJson(responseData);
     } on DioException catch (e) {
       throw ErrorMapper.fromDio(e);
     } catch (e) {
@@ -95,24 +98,13 @@ class IaRemoteDataSource {
     }
   }
 
-  /// Retrieves recommendations from the AI service.
-  ///
-  /// Makes a GET request to `/api/ai/recommendations` to fetch AI-generated
-  /// recommendations for a specific farm.
-  ///
-  /// Parameters:
-  ///   - tenantId: The tenant identifier (added to headers)
-  ///   - fincaId: The farm identifier (not used in current endpoint but provided for consistency)
-  ///
-  /// Returns a list of [RecommendationModel] objects, or throws an [AppFailure]
-  /// if the operation fails.
   Future<List<RecommendationModel>> getRecommendations({
     required String tenantId,
     required String fincaId,
   }) async {
     try {
       final response = await _dio.get(
-        '/api/ai/recommendations',
+        '/ai/recommendations',
         options: Options(
           headers: {
             'X-Tenant-ID': tenantId,
@@ -127,7 +119,6 @@ class IaRemoteDataSource {
                 RecommendationModel.fromJson(item as Map<String, dynamic>))
             .toList();
       } else if (data is Map<String, dynamic>) {
-        // Handle case where API wraps list in an object (e.g., { data: [...] })
         final list = data['data'] ?? data['recommendations'];
         if (list is List) {
           return list
@@ -145,19 +136,12 @@ class IaRemoteDataSource {
     }
   }
 
-  /// Checks the health status of the AI service.
-  ///
-  /// Makes a GET request to `/api/ai/health` to verify that the AI service
-  /// is operational and accessible.
-  ///
-  /// Returns true if the service is healthy, or throws an [AppFailure]
-  /// if the operation fails.
   Future<bool> checkHealthStatus({
     required String tenantId,
   }) async {
     try {
       final response = await _dio.get(
-        '/api/ai/health',
+        '/ai/health',
         options: Options(
           headers: {
             'X-Tenant-ID': tenantId,

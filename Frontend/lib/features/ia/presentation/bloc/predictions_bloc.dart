@@ -31,8 +31,11 @@ class PredictionsBloc extends Bloc<PredictionsEvent, PredictionsState> {
     emit(const PredictionsLoadingState());
 
     final result = await _repository.getPredictions(
+      metric: event.metric,
+      values: event.values,
       tenantId: event.tenantId,
       fincaId: event.fincaId,
+      steps: event.steps,
     );
 
     result.fold(
