@@ -16,6 +16,9 @@ import '../../features/fincas/presentation/bloc/fincas_list_bloc.dart';
 import '../../features/potreros/presentation/bloc/potreros_list_bloc.dart';
 import '../../features/reproduccion/presentation/bloc/reproduccion_list_bloc.dart';
 import '../../features/salud/presentation/bloc/salud_list_bloc.dart';
+import '../../features/ia/presentation/bloc/chat_bloc.dart';
+import '../../features/ia/presentation/bloc/predictions_bloc.dart';
+import '../../features/ia/presentation/bloc/recommendations_bloc.dart';
 import 'route_paths.dart';
 
 /// Cascarón común a todas las pantallas dentro del shell con bottom nav.
@@ -58,6 +61,16 @@ class HomeShell extends StatelessWidget {
         // dispara la primera carga lazy cuando se construye.
         BlocProvider<DashboardInteligenciaBloc>(
           create: (_) => getIt<DashboardInteligenciaBloc>(),
+        ),
+        // IA BLoCs - Asistente, Predicciones y Recomendaciones
+        BlocProvider<ChatBloc>(
+          create: (_) => getIt<ChatBloc>(),
+        ),
+        BlocProvider<PredictionsBloc>(
+          create: (_) => getIt<PredictionsBloc>(),
+        ),
+        BlocProvider<RecommendationsBloc>(
+          create: (_) => getIt<RecommendationsBloc>(),
         ),
       ],
       child: BlocListener<FincasListBloc, FincasListState>(

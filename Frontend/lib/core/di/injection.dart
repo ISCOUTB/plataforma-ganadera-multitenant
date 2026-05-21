@@ -108,6 +108,13 @@ import '../../features/admin/data/datasources/admin_remote_datasource.dart';
 import '../../features/admin/data/repositories/admin_repository_impl.dart';
 import '../../features/admin/domain/repositories/admin_repository.dart';
 import '../../features/admin/presentation/bloc/admin_bloc.dart';
+// IA
+import '../../features/ia/data/datasources/ia_remote_data_source.dart';
+import '../../features/ia/data/repositories/ia_repository_impl.dart';
+import '../../features/ia/domain/repositories/ia_repository.dart';
+import '../../features/ia/presentation/bloc/chat_bloc.dart';
+import '../../features/ia/presentation/bloc/predictions_bloc.dart';
+import '../../features/ia/presentation/bloc/recommendations_bloc.dart';
 
 /// Contenedor global de inyección de dependencias.
 final GetIt getIt = GetIt.instance;
@@ -407,5 +414,22 @@ Future<void> configureDependencies() async {
   );
   getIt.registerFactory<TratamientosBloc>(
     () => TratamientosBloc(repository: getIt<TratamientosRepository>()),
+  );
+
+  // ---------- IA (Asistente, Predicciones, Recomendaciones) ----------
+  getIt.registerLazySingleton<IaRemoteDataSource>(
+    () => IaRemoteDataSource(getIt<DioClient>().dio),
+  );
+  getIt.registerLazySingleton<IaRepository>(
+    () => IaRepositoryImpl(remoteDataSource: getIt<IaRemoteDataSource>()),
+  );
+  getIt.registerFactory<ChatBloc>(
+    () => ChatBloc(repository: getIt<IaRepository>()),
+  );
+  getIt.registerFactory<PredictionsBloc>(
+    () => PredictionsBloc(repository: getIt<IaRepository>()),
+  );
+  getIt.registerFactory<RecommendationsBloc>(
+    () => RecommendationsBloc(repository: getIt<IaRepository>()),
   );
 }
