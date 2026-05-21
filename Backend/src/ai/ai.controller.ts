@@ -57,7 +57,7 @@ export class AiController {
    */
   @Post('chat')
   async chat(@Request() req, @Body() body: any) {
-    const tenantId = req.user.tenantId; // Extraído del JWT por guards
+    const tenantId = req.user.tenant_id;
     const { messages } = body;
 
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
@@ -89,7 +89,7 @@ export class AiController {
    */
   @Post('predict')
   async predict(@Request() req, @Body() body: any) {
-    const tenantId = req.user.tenantId;
+    const tenantId = req.user.tenant_id;
     const { metric, values, steps = 30 } = body;
 
     if (!metric || typeof metric !== 'string') {
@@ -127,7 +127,7 @@ export class AiController {
    */
   @Get('recommendations')
   async recommendations(@Request() req) {
-    const tenantId = req.user.tenantId;
+    const tenantId = req.user.tenant_id;
     const fincaId = req.user.fincaId || '';
 
     const recommendations = await this.aiService.getRecommendations(
