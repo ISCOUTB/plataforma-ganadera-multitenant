@@ -133,7 +133,7 @@ class _AlimentosListView extends StatelessWidget {
                                     ),
                                 ],
                                 onTap: () =>
-                                    context.push('/money/alimentos/${a.id}/edit'),
+                                    context.push('/money/alimentos/${a.id}/detalle?nombre=${Uri.encodeComponent(a.tipoAlimento)}'),
                               );
                             },
                           ),

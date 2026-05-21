@@ -28,7 +28,38 @@ class _VeterinarioDetailPageState extends State<VeterinarioDetailPage> {
 
   Future<void> _load() async {
     final v = await getIt<VeterinariosRepository>().getOne(widget.veterinarioId);
+    if (!mounted) return;
     setState(() { _vet = v; _loading = false; });
+  }
+
+  Future<void> _delete() async {
+    bool confirmed = false;
+    await showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Eliminar veterinario'),
+        content: const Text('¿Seguro que quieres eliminar este veterinario? Esta acción no se puede deshacer.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text('Cancelar'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            onPressed: () {
+              confirmed = true;
+              Navigator.of(dialogContext).pop();
+            },
+            child: const Text('Eliminar'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed) {
+      await getIt<VeterinariosRepository>().delete(_vet!.id);
+      if (!mounted) return;
+      context.pop();
+    }
   }
 
   @override
@@ -89,6 +120,16 @@ class _VeterinarioDetailPageState extends State<VeterinarioDetailPage> {
                     onPressed: () => context.push('/health/veterinarios/${v.id}/edit'),
                     icon: const Icon(Icons.edit_outlined, size: 18),
                     label: const Text('Editar veterinario'),
+                  ),
+                  const SizedBox(height: 10),
+                  ElevatedButton.icon(
+                    onPressed: _delete,
+                    icon: const Icon(Icons.delete_outline, size: 18),
+                    label: const Text('Eliminar veterinario'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: cs.error,
+                      foregroundColor: cs.onError,
+                    ),
                   ),
                 ],
               ),

@@ -13,4 +13,6 @@ class TratamientosRepositoryImpl implements TratamientosRepository {
   @override Future<Tratamiento> update(int id, Map<String, dynamic> data) => _remote.update(id, data);
   @override Future<void> delete(int id) => _remote.delete(id);
   @override Future<SeguimientoTratamiento> addSeguimiento(int id, Map<String, dynamic> data) => _remote.addSeguimiento(id, data);
+  @override Future<SeguimientoTratamiento> updateSeguimiento(int seguimientoId, String observacion) => _remote.updateSeguimiento(seguimientoId, observacion);
+  @override Future<void> deleteSeguimiento(int seguimientoId) => _remote.deleteSeguimiento(seguimientoId);
 }

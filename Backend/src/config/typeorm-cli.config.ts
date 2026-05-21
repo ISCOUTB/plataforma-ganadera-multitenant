@@ -15,6 +15,8 @@ import { MovimientoAnimal } from '../movimientos/entities/movimiento-animal.enti
 import { Veterinario } from '../veterinarios/entities/veterinario.entity';
 import { Cita } from '../citas/entities/cita.entity';
 import { Tratamiento, SeguimientoTratamiento } from '../tratamientos/entities/tratamiento.entity';
+import { Proveedor } from '../proveedores/entities/proveedor.entity';
+import { ProveedorPrecio } from '../proveedores/entities/proveedor-precio.entity';
 
 // DataSource usado SOLO por el CLI de TypeORM (migration:generate / migration:run).
 // La app en runtime sigue inicializándose con TypeOrmModule.forRootAsync en
@@ -43,6 +45,8 @@ export const AppDataSource = new DataSource({
     Cita,
     Tratamiento,
     SeguimientoTratamiento,
+    Proveedor,
+    ProveedorPrecio,
   ],
   migrations: ['src/migrations/*.ts'],
   synchronize: false,

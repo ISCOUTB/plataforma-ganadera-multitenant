@@ -38,7 +38,7 @@ app.add_middleware(
 
 GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
 GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
-GROQ_MODEL = "mixtral-8x7b-32768"  # Llama-like, muy rápido
+GROQ_MODEL = "llama-3.1-8b-instant"  # Llama 3.1 8B, muy rápido y activo
 
 HUGGINGFACE_API_KEY = os.getenv("HUGGINGFACE_API_KEY", "")
 HUGGINGFACE_URL = "https://api-inference.huggingface.co/models/amazon/chronos-t5-small"
@@ -108,6 +108,15 @@ async def chat_completion(request: dict):
     
     logger.info(f"Chat request from tenant: {tenant_id}")
     
+    # Limitar historial a últimos 10 mensajes para no exceder límite de tokens
+    recent_messages = messages[-10:] if len(messages) > 10 else messages
+    
+    # System prompt para respuestas concisas
+    system_prompt = {
+        "role": "system",
+        "content": "Eres un asistente experto en ganadería y producción pecuaria. Responde de forma concisa y práctica. Máximo 3-4 párrafos."
+    }
+    
     # Llamar a Groq API
     async with httpx.AsyncClient() as client:
         try:
@@ -119,9 +128,9 @@ async def chat_completion(request: dict):
                 },
                 json={
                     "model": GROQ_MODEL,
-                    "messages": messages,
+                    "messages": [system_prompt] + recent_messages,
                     "temperature": 0.7,
-                    "max_tokens": 256,
+                    "max_tokens": 512,
                     "top_p": 1
                 },
                 timeout=30.0

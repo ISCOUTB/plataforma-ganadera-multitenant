@@ -19,6 +19,7 @@ import '../widgets/export_pdf_button.dart';
 import '../widgets/demography_card.dart';
 import '../widgets/farm_map_card.dart';
 import '../widgets/finances_bar_card.dart';
+import '../widgets/proveedores_resumen_card.dart';
 import '../widgets/ganancia_card.dart';
 import '../widgets/gender_split_card.dart';
 import '../widgets/kpi_sparkline_card.dart';
@@ -200,6 +201,11 @@ class _DashboardBentoView extends StatelessWidget {
                                   .fadeIn(duration: 400.ms, delay: 160.ms)
                                   .slideY(begin: 0.05, end: 0),
                             ),
+                            // Proveedores — resumen de mejores precios
+                            StaggeredGridTile.fit(
+                              crossAxisCellCount: cols,
+                              child: const ProveedoresResumenCard(),
+                            ),
                             // Mapa visual de la finca (grid de potreros)
                             StaggeredGridTile.fit(
                               crossAxisCellCount: cols,
@@ -242,20 +248,20 @@ class _DashboardBentoView extends StatelessWidget {
                                   .fadeIn(duration: 400.ms, delay: 280.ms)
                                   .slideY(begin: 0.05, end: 0),
                             ),
-                            // IA Predicciones — full en móvil, mitad en desktop
+                            // Predicciones IA
                             StaggeredGridTile.fit(
                               crossAxisCellCount: isWide ? 1 : cols,
                               child: const IaPredictionsCard()
                                   .animate()
-                                  .fadeIn(duration: 400.ms, delay: 320.ms)
+                                  .fadeIn(duration: 400.ms, delay: 300.ms)
                                   .slideY(begin: 0.05, end: 0),
                             ),
-                            // IA Recomendaciones — full en móvil, mitad en desktop
+                            // Recomendaciones IA
                             StaggeredGridTile.fit(
                               crossAxisCellCount: isWide ? 1 : cols,
                               child: const IaRecommendationsCard()
                                   .animate()
-                                  .fadeIn(duration: 400.ms, delay: 360.ms)
+                                  .fadeIn(duration: 400.ms, delay: 320.ms)
                                   .slideY(begin: 0.05, end: 0),
                             ),
                           ],

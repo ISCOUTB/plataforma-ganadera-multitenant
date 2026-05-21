@@ -27,8 +27,10 @@ class _TratamientoDetailPageState extends State<TratamientoDetailPage> {
   }
 
   Future<void> _load() async {
+    if (!mounted) return;
     setState(() => _loading = true);
     final t = await getIt<TratamientosRepository>().getOne(widget.tratamientoId);
+    if (!mounted) return;
     setState(() { _tratamiento = t; _loading = false; });
   }
 
@@ -37,11 +39,80 @@ class _TratamientoDetailPageState extends State<TratamientoDetailPage> {
     setState(() => _submitting = true);
     await getIt<TratamientosRepository>().addSeguimiento(
       widget.tratamientoId,
-      { 'observacion': _obsCtrl.text.trim() },
+      {'observacion': _obsCtrl.text.trim()},
     );
     _obsCtrl.clear();
+    if (!mounted) return;
     await _load();
+    if (!mounted) return;
     setState(() => _submitting = false);
+  }
+
+Future<void> _editSeguimiento(SeguimientoTratamiento s) async {
+    final ctrl = TextEditingController(text: s.observacion);
+    bool confirmed = false;
+    await showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Editar observación'),
+        content: TextField(
+          controller: ctrl,
+          maxLines: 3,
+          autofocus: true,
+          decoration: const InputDecoration(labelText: 'Observación'),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text('Cancelar'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              confirmed = true;
+              Navigator.of(dialogContext).pop();
+            },
+            child: const Text('Guardar'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed && ctrl.text.trim().isNotEmpty) {
+      await getIt<TratamientosRepository>().updateSeguimiento(s.id, ctrl.text.trim());
+      if (!mounted) return;
+      await _load();
+    }
+  }
+
+Future<void> _deleteSeguimiento(SeguimientoTratamiento s) async {
+    bool confirmed = false;
+    await showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Eliminar observación'),
+        content: const Text('¿Seguro que quieres eliminar esta observación? Esta acción no se puede deshacer.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text('Cancelar'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            onPressed: () {
+              confirmed = true;
+              Navigator.of(dialogContext).pop();
+            },
+            child: const Text('Eliminar'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed) {
+      debugPrint('Eliminando seguimiento id: ${s.id}');
+      await getIt<TratamientosRepository>().deleteSeguimiento(s.id);
+      debugPrint('Eliminado ok');
+      if (!mounted) return;
+      await _load();
+    }
   }
 
   @override
@@ -125,6 +196,30 @@ class _TratamientoDetailPageState extends State<TratamientoDetailPage> {
                             children: [
                               Text(s.registradoPor ?? 'Sin nombre', style: theme.textTheme.labelSmall?.copyWith(color: cs.primary, fontWeight: FontWeight.w700)),
                               Text('${s.creadoEn.day}/${s.creadoEn.month}/${s.creadoEn.year}', style: theme.textTheme.labelSmall?.copyWith(color: cs.onSurfaceVariant)),
+                              Row(
+                                children: [
+                                  IconButton(
+                                    icon: const Icon(Icons.edit_outlined, size: 18),
+                                    tooltip: 'Editar',
+                                    onPressed: () => _editSeguimiento(s),
+                                    style: IconButton.styleFrom(
+                                      foregroundColor: cs.primary,
+                                      padding: const EdgeInsets.all(4),
+                                      minimumSize: const Size(28, 28),
+                                    ),
+                                  ),
+                                  IconButton(
+                                    icon: const Icon(Icons.delete_outline, size: 18),
+                                    tooltip: 'Eliminar',
+                                    onPressed: () => _deleteSeguimiento(s),
+                                    style: IconButton.styleFrom(
+                                      foregroundColor: cs.error,
+                                      padding: const EdgeInsets.all(4),
+                                      minimumSize: const Size(28, 28),
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ],
                           ),
                         ],

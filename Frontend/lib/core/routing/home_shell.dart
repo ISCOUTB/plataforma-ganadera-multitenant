@@ -16,9 +16,9 @@ import '../../features/fincas/presentation/bloc/fincas_list_bloc.dart';
 import '../../features/potreros/presentation/bloc/potreros_list_bloc.dart';
 import '../../features/reproduccion/presentation/bloc/reproduccion_list_bloc.dart';
 import '../../features/salud/presentation/bloc/salud_list_bloc.dart';
-import '../../features/ia/presentation/bloc/chat_bloc.dart';
 import '../../features/ia/presentation/bloc/predictions_bloc.dart';
 import '../../features/ia/presentation/bloc/recommendations_bloc.dart';
+import '../../features/ia/presentation/bloc/chat_bloc.dart';
 import '../../features/ia/presentation/widgets/ai_chat_fab.dart';
 import 'route_paths.dart';
 
@@ -63,15 +63,14 @@ class HomeShell extends StatelessWidget {
         BlocProvider<DashboardInteligenciaBloc>(
           create: (_) => getIt<DashboardInteligenciaBloc>(),
         ),
-        // IA BLoCs - Asistente, Predicciones y Recomendaciones
-        BlocProvider<ChatBloc>(
-          create: (_) => getIt<ChatBloc>(),
-        ),
         BlocProvider<PredictionsBloc>(
           create: (_) => getIt<PredictionsBloc>(),
         ),
         BlocProvider<RecommendationsBloc>(
           create: (_) => getIt<RecommendationsBloc>(),
+        ),
+        BlocProvider<ChatBloc>(
+          create: (_) => getIt<ChatBloc>(),
         ),
       ],
       child: BlocListener<FincasListBloc, FincasListState>(
@@ -147,11 +146,12 @@ class HomeShell extends StatelessWidget {
           floatingActionButton: showFab
               ? Column(
                   mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     const AiChatFab(),
                     const SizedBox(height: 16),
-                    AppSquircleFab(onPressed: () => _openQuickCreate(context)),
+                    AppSquircleFab(
+                      onPressed: () => _openQuickCreate(context),
+                    ),
                   ],
                 )
               : null,

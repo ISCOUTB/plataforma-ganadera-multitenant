@@ -29,30 +29,6 @@ services:
       timeout: 5s
       retries: 5
 
-  # Backend IA Proxy - Llama 3B + Chronos-2 (APIs Remotas)
-  backend-ai:
-    build:
-      context: ./Backend-IA-Proxy
-      dockerfile: Dockerfile
-    container_name: farmlink-ai-proxy
-    restart: unless-stopped
-    ports:
-      - "8000:8000"
-    environment:
-      - GROQ_API_KEY=${GROQ_API_KEY}
-      - HUGGINGFACE_API_KEY=${HUGGINGFACE_API_KEY}
-      - PORT=8000
-      - ENVIRONMENT=development
-    networks:
-      - farmlink-network
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
-    depends_on:
-      - db
-
 volumes:
   postgres_data:
     driver: local

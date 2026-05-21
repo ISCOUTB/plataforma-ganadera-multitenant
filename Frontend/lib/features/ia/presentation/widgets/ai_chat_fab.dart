@@ -13,13 +13,18 @@ class AiChatFab extends StatelessWidget {
 
   void _openChat(BuildContext context) {
     final chatBloc = context.read<ChatBloc>();
+    final tenantId = context.read<AuthBloc>().state.user?.tenantId ?? '';
+    final fincaId = context.read<FincasListBloc>().state.selectedFincaId ?? '';
 
     showDialog(
       context: context,
       barrierColor: Colors.black26,
       builder: (_) => BlocProvider<ChatBloc>.value(
         value: chatBloc,
-        child: const _AiChatDialog(),
+        child: _AiChatDialog(
+          tenantId: tenantId,
+          fincaId: fincaId,
+        ),
       ),
     );
   }
@@ -63,7 +68,13 @@ class AiChatFab extends StatelessWidget {
 }
 
 class _AiChatDialog extends StatefulWidget {
-  const _AiChatDialog();
+  final String tenantId;
+  final String fincaId;
+
+  const _AiChatDialog({
+    required this.tenantId,
+    required this.fincaId,
+  });
 
   @override
   State<_AiChatDialog> createState() => _AiChatDialogState();
@@ -84,14 +95,11 @@ class _AiChatDialogState extends State<_AiChatDialog> {
     final text = _controller.text.trim();
     if (text.isEmpty) return;
 
-    final tenantId = context.read<AuthBloc>().state.user?.tenantId ?? '';
-    final fincaId = context.read<FincasListBloc>().state.selectedFincaId ?? '';
-
     context.read<ChatBloc>().add(
           SendChatMessageEvent(
             message: text,
-            tenantId: tenantId,
-            fincaId: fincaId,
+            tenantId: widget.tenantId,
+            fincaId: widget.fincaId,
           ),
         );
 
@@ -216,21 +224,10 @@ class _AiChatDialogState extends State<_AiChatDialog> {
                             const SizedBox(height: 12),
                             TextButton(
                               onPressed: () {
-                                final tenantId = context
-                                        .read<AuthBloc>()
-                                        .state
-                                        .user
-                                        ?.tenantId ??
-                                    '';
-                                final fincaId = context
-                                    .read<FincasListBloc>()
-                                    .state
-                                    .selectedFincaId ??
-                                    '';
                                 context.read<ChatBloc>().add(
                                       LoadChatHistoryEvent(
-                                        tenantId: tenantId,
-                                        fincaId: fincaId,
+                                        tenantId: widget.tenantId,
+                                        fincaId: widget.fincaId,
                                       ),
                                     );
                               },

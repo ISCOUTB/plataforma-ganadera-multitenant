@@ -5,8 +5,6 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import '../../../../core/widgets/section_header.dart';
 
-/// Hub del módulo Inventario. Tres tarjetas de acceso rápido a las
-/// sub-secciones (Animales, Fincas, Potreros).
 class InventoryPage extends StatelessWidget {
   const InventoryPage({super.key});
 

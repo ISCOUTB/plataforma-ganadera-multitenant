@@ -87,6 +87,10 @@ import '../../features/alimentos/data/repositories/alimento_repository_impl.dart
 import '../../features/alimentos/domain/repositories/alimento_repository.dart';
 import '../../features/alimentos/presentation/bloc/alimento_form_bloc.dart';
 import '../../features/alimentos/presentation/bloc/alimentos_list_bloc.dart';
+// Proveedores
+import '../../features/proveedores/data/datasources/proveedores_remote_datasource.dart';
+import '../../features/proveedores/data/repositories/proveedores_repository_impl.dart';
+import '../../features/proveedores/domain/repositories/proveedores_repository.dart';
 // Movimientos
 import '../../features/movimientos/data/datasources/movimiento_remote_datasource.dart';
 import '../../features/movimientos/data/repositories/movimiento_repository_impl.dart';
@@ -108,13 +112,13 @@ import '../../features/admin/data/datasources/admin_remote_datasource.dart';
 import '../../features/admin/data/repositories/admin_repository_impl.dart';
 import '../../features/admin/domain/repositories/admin_repository.dart';
 import '../../features/admin/presentation/bloc/admin_bloc.dart';
-// IA
+// IA (Predicciones, Recomendaciones, Chat)
 import '../../features/ia/data/datasources/ia_remote_data_source.dart';
 import '../../features/ia/data/repositories/ia_repository_impl.dart';
 import '../../features/ia/domain/repositories/ia_repository.dart';
-import '../../features/ia/presentation/bloc/chat_bloc.dart';
 import '../../features/ia/presentation/bloc/predictions_bloc.dart';
 import '../../features/ia/presentation/bloc/recommendations_bloc.dart';
+import '../../features/ia/presentation/bloc/chat_bloc.dart';
 
 /// Contenedor global de inyección de dependencias.
 final GetIt getIt = GetIt.instance;
@@ -194,6 +198,25 @@ Future<void> configureDependencies() async {
   );
   getIt.registerFactory<DashboardInteligenciaBloc>(
     () => DashboardInteligenciaBloc(repository: getIt<DashboardRepository>()),
+  );
+
+  // ---------- IA (Predicciones, Recomendaciones, Chat) ----------
+  getIt.registerLazySingleton<IaRemoteDataSource>(
+    () => IaRemoteDataSource(getIt<DioClient>().dio),
+  );
+  getIt.registerLazySingleton<IaRepository>(
+    () => IaRepositoryImpl(
+      remoteDataSource: getIt<IaRemoteDataSource>(),
+    ),
+  );
+  getIt.registerFactory<PredictionsBloc>(
+    () => PredictionsBloc(repository: getIt<IaRepository>()),
+  );
+  getIt.registerFactory<RecommendationsBloc>(
+    () => RecommendationsBloc(repository: getIt<IaRepository>()),
+  );
+  getIt.registerFactory<ChatBloc>(
+    () => ChatBloc(repository: getIt<IaRepository>()),
   );
 
   // ---------- Fincas ----------
@@ -416,20 +439,11 @@ Future<void> configureDependencies() async {
     () => TratamientosBloc(repository: getIt<TratamientosRepository>()),
   );
 
-  // ---------- IA (Asistente, Predicciones, Recomendaciones) ----------
-  getIt.registerLazySingleton<IaRemoteDataSource>(
-    () => IaRemoteDataSource(getIt<DioClient>().dio),
+  // ---------- Proveedores ----------
+  getIt.registerLazySingleton<ProveedoresRemoteDataSource>(
+    () => ProveedoresRemoteDataSource(getIt<DioClient>().dio),
   );
-  getIt.registerLazySingleton<IaRepository>(
-    () => IaRepositoryImpl(remoteDataSource: getIt<IaRemoteDataSource>()),
-  );
-  getIt.registerFactory<ChatBloc>(
-    () => ChatBloc(repository: getIt<IaRepository>()),
-  );
-  getIt.registerFactory<PredictionsBloc>(
-    () => PredictionsBloc(repository: getIt<IaRepository>()),
-  );
-  getIt.registerFactory<RecommendationsBloc>(
-    () => RecommendationsBloc(repository: getIt<IaRepository>()),
+  getIt.registerLazySingleton<ProveedoresRepository>(
+    () => ProveedoresRepositoryImpl(remote: getIt<ProveedoresRemoteDataSource>()),
   );
 }

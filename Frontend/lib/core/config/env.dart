@@ -8,11 +8,11 @@ class Env {
   /// `--dart-define=API_BASE_URL=http://localhost:3000/api`.
   static const String apiBaseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'http://10.0.2.2:3000/api',
+    defaultValue: 'http://localhost:3000/api',
   );
 
   static const Duration connectTimeout = Duration(seconds: 15);
-  static const Duration receiveTimeout = Duration(seconds: 20);
+  static const Duration receiveTimeout = Duration(seconds: 45);
 
   static const bool isDebug = !bool.fromEnvironment('dart.vm.product');
 }

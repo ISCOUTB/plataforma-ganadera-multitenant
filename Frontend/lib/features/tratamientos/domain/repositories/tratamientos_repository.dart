@@ -8,4 +8,6 @@ abstract class TratamientosRepository {
   Future<Tratamiento> update(int id, Map<String, dynamic> data);
   Future<void> delete(int id);
   Future<SeguimientoTratamiento> addSeguimiento(int id, Map<String, dynamic> data);
+  Future<SeguimientoTratamiento> updateSeguimiento(int seguimientoId, String observacion);
+  Future<void> deleteSeguimiento(int seguimientoId);
 }

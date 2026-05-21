@@ -41,18 +41,28 @@ class IaRemoteDataSource {
         ),
       );
 
-      final responseData = response.data as Map<String, dynamic>;
-      final responseWrapper = responseData['response'] as Map<String, dynamic>?;
+      final responseData = response.data;
 
-      if (responseWrapper != null) {
-        return ChatMessageModel.fromJson(responseWrapper);
+      // NestJS devuelve: {status: 200, response: "string", tenant: "...", timestamp: "..."}
+      if (responseData is Map<String, dynamic>) {
+        final responseContent = responseData['response'];
+
+        if (responseContent is Map<String, dynamic>) {
+          return ChatMessageModel.fromJson(responseContent);
+        }
+
+        if (responseContent is String) {
+          return ChatMessageModel(
+            id: DateTime.now().millisecondsSinceEpoch.toString(),
+            role: ChatMessageRole.assistant,
+            content: responseContent,
+            timestamp: DateTime.now(),
+          );
+        }
       }
 
-      return ChatMessageModel(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
-        role: ChatMessageRole.assistant,
-        content: responseData['response'] as String? ?? '',
-        timestamp: DateTime.now(),
+      throw UnknownFailure(
+        'Respuesta inesperada del servidor: ${responseData.runtimeType}',
       );
     } on DioException catch (e) {
       throw ErrorMapper.fromDio(e);

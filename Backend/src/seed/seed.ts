@@ -11,16 +11,13 @@
  *   - ~1100 finanzas distribuidas en 60 meses con tendencia creciente
  *   - 30 eventos reproductivos
  *   - 3 veterinarios con citas y tratamientos demo
+ *   - 3 proveedores con precios demo
+ *   - 5 alimentos demo
  *
  * Diseño:
  *   - DataSource standalone (sin NestFactory) → más rápido, sin hooks.
  *   - Bulk insert vía QueryBuilder en chunks de 500.
  *   - TRUNCATE ... CASCADE al inicio para reset total y reset de secuencias.
- *
- * NOTA sobre nombres de columnas FK:
- *   `bovinos.fincaPkIdFinca` y `bovinos.potreroPkIdPotrero` son
- *   auto-generados por TypeORM (relaciones sin @JoinColumn — ver
- *   `animal.entity.ts:92-96`). El dashboard service ya usa estos nombres.
  */
 import { DataSource } from 'typeorm';
 import * as bcrypt from 'bcrypt';
@@ -39,8 +36,6 @@ const FINCAS_IDS = ['F1', 'F2', 'F3'] as const;
 const ANIMALES_POR_FINCA = 125;
 const MOVS_POR_ANIMAL = 6;
 const HOY = new Date();
-
-// ---------------- Helpers ----------------
 
 function pick<T>(arr: readonly T[]): T {
   return arr[Math.floor(Math.random() * arr.length)];
@@ -77,23 +72,11 @@ function addMonths(d: Date, months: number): Date {
   return r;
 }
 
-/**
- * Edad en meses entre dos fechas (floor). 0 si `to` <= `from`.
- * Usa 30.44 días/mes (promedio anual) para suavizar diferencias por mes.
- */
 function monthsBetween(from: Date, to: Date): number {
   const ms = to.getTime() - from.getTime();
   return Math.max(0, Math.floor(ms / (1000 * 60 * 60 * 24 * 30.44)));
 }
 
-/**
- * Heurística extendida de etapa productiva (R6 + R10):
- *  - <24m → CRECIMIENTO.
- *  - Macho 12–24m en finca de engorde (F2) → ENGORDE.
- *  - Macho ≥24m de raza alta calidad (Brahman/Angus) con prob. 5% → REPRODUCTOR.
- *  - Hembra ≥24m → PRODUCCION.
- *  - Resto de machos ≥24m → SECA.
- */
 function inferEtapa(genero: 'm' | 'h', edadMeses: number, finca: string, raza: RazaKey): EtapaProductiva {
   if (genero === 'm' && edadMeses >= 12 && edadMeses < 24 && finca === 'F2') return EtapaProductiva.ENGORDE;
   if (edadMeses < 24) return EtapaProductiva.CRECIMIENTO;
@@ -102,8 +85,6 @@ function inferEtapa(genero: 'm' | 'h', edadMeses: number, finca: string, raza: R
   return EtapaProductiva.SECA;
 }
 
-// Curvas zootécnicas aproximadas: peso al nacer, peso adulto por género
-// (kg) y ganancia diaria promedio en gramos. Mantenidas conservadoras.
 const RAZAS = {
   Brahman: { nacer: 32, adultoH: 480, adultoM: 720, gdpGr: 700 },
   Angus: { nacer: 30, adultoH: 550, adultoM: 800, gdpGr: 850 },
@@ -115,10 +96,6 @@ const RAZAS = {
 
 type RazaKey = keyof typeof RAZAS;
 
-/**
- * Peso coherente con edad y raza: crecimiento lineal desde el peso al
- * nacer hasta el peso adulto, con jitter ±8% para realismo.
- */
 function pesoPorEdadRaza(razaKey: RazaKey, genero: 'm' | 'h', edadMeses: number): number {
   const r = RAZAS[razaKey];
   const adulto = genero === 'h' ? r.adultoH : r.adultoM;
@@ -129,9 +106,6 @@ function pesoPorEdadRaza(razaKey: RazaKey, genero: 'm' | 'h', edadMeses: number)
   return Math.round(jitter * 100) / 100;
 }
 
-/**
- * Inserta `rows` en chunks de `size`. Devuelve la cantidad total insertada.
- */
 async function bulkInsert<T>(ds: DataSource, entity: any, rows: T[], size = 500): Promise<number> {
   for (let i = 0; i < rows.length; i += size) {
     const chunk = rows.slice(i, i + size);
@@ -140,12 +114,12 @@ async function bulkInsert<T>(ds: DataSource, entity: any, rows: T[], size = 500)
   return rows.length;
 }
 
-// ---------------- Fases ----------------
-
 async function truncateAll(ds: DataSource): Promise<void> {
   console.log('[seed] 1/10 TRUNCATE de todas las tablas...');
   await ds.query(`
     TRUNCATE TABLE
+      proveedor_precios,
+      proveedores,
       seguimientos_tratamiento,
       tratamientos,
       citas,
@@ -176,8 +150,25 @@ async function seedAdmin(ds: DataSource): Promise<void> {
   }).execute();
 }
 
+async function seedAlimentos(ds: DataSource): Promise<void> {
+  console.log('[seed] Alimentos demo...');
+  await ds.query(`
+    INSERT INTO alimento (pk_id_alimento, tipo_alimento, cantidad_total, frecuencia, costo, tenant_id)
+    VALUES
+      ('ALI-001', 'Concentrado bovino', 500, 'diaria', 85000, '${TENANT}'),
+      ('ALI-002', 'Heno de pasto', 1000, 'diaria', 45000, '${TENANT}'),
+      ('ALI-003', 'Melaza', 300, 'semanal', 32000, '${TENANT}'),
+      ('ALI-004', 'Sal mineralizada', 200, 'semanal', 28000, '${TENANT}'),
+      ('ALI-005', 'Maíz molido', 400, 'diaria', 62000, '${TENANT}'),
+      ('ALI-006', 'Torta de soya', 250, 'diaria', 95000, '${TENANT}'),
+      ('ALI-007', 'Pasto kikuyo', 800, 'diaria', 18000, '${TENANT}'),
+      ('ALI-008', 'Ensilaje de maíz', 600, 'diaria', 38000, '${TENANT}')
+    ON CONFLICT (pk_id_alimento) DO NOTHING;
+  `);
+}
+
 async function seedFincas(ds: DataSource): Promise<void> {
-  console.log('[seed] 3/10 3 fincas (nombres largos para probar overflow)...');
+  console.log('[seed] 3/10 3 fincas...');
   const rows: Partial<Finca>[] = [
     { pk_id_finca: 'F1', nombre_finca: 'Hacienda Ganadera La Victoria del Sinú Medio S.A.S.', ubicacion: 'Tierralta, Córdoba', propietario: 'Camilo Anaya', area_total: 520.5, fecha_registro: new Date(2021, 0, 15), tenant_id: TENANT },
     { pk_id_finca: 'F2', nombre_finca: 'Finca Vista Hermosa El Rincón Andino', ubicacion: 'Charalá, Santander', propietario: 'Camilo Anaya', area_total: 380.75, fecha_registro: new Date(2021, 2, 3), tenant_id: TENANT },
@@ -187,7 +178,7 @@ async function seedFincas(ds: DataSource): Promise<void> {
 }
 
 async function seedPotreros(ds: DataSource): Promise<string[][]> {
-  console.log('[seed] 4/10 18 potreros (6 por finca)...');
+  console.log('[seed] 4/10 18 potreros...');
   const estados = ['activo', 'activo', 'activo', 'activo', 'en descanso', 'mantenimiento'];
   const nombresBase: Record<string, string[]> = {
     F1: ['Lote Alpha 1', 'Lote Alpha 2', 'Potrero Lote Alpha Sector Norte de la Hacienda — Zona de Levante 2024', 'Pradera Sur', 'El Mango', 'Cerca del Río'],
@@ -226,12 +217,11 @@ interface BovinoSembrado {
   fechaIngreso: Date;
   fechaSalida: Date | null;
   genero: 'm' | 'h';
-  // True si el animal salió del inventario (VENDIDO o MUERTO).
   inactivo: boolean;
 }
 
 async function seedBovinos(ds: DataSource, potrerosPorFinca: string[][]): Promise<BovinoSembrado[]> {
-  console.log(`[seed] 5/10 ${ANIMALES_POR_FINCA * FINCAS_IDS.length} bovinos (cronología y peso coherentes con edad/raza)...`);
+  console.log(`[seed] 5/10 ${ANIMALES_POR_FINCA * FINCAS_IDS.length} bovinos...`);
   const razaKeys = Object.keys(RAZAS) as RazaKey[];
   const rows: Record<string, unknown>[] = [];
   let bovIdx = 0;
@@ -307,7 +297,7 @@ async function seedBovinos(ds: DataSource, potrerosPorFinca: string[][]): Promis
 }
 
 async function seedMovimientos(ds: DataSource, bovinos: BovinoSembrado[], potrerosPorFinca: string[][]): Promise<number> {
-  console.log(`[seed] 6/10 ${bovinos.length * MOVS_POR_ANIMAL} movimientos (trazabilidad)...`);
+  console.log(`[seed] 6/10 movimientos...`);
   const motivos = ['Rotación de pastoreo', 'Reagrupación por etapa', 'Aislamiento sanitario', 'Cambio por sobrepastoreo', 'Reagrupación reproductiva', 'Movimiento por inundación', 'Rotación programada', 'Separación por edad'];
   const fincaIdx: Record<string, number> = { F1: 0, F2: 1, F3: 2 };
   const rows: Record<string, unknown>[] = [];
@@ -335,7 +325,7 @@ async function seedMovimientos(ds: DataSource, bovinos: BovinoSembrado[], potrer
 interface SaludCounts { vencidos: number; pendientes: number; alDia: number; historicos: number; }
 
 async function seedSalud(ds: DataSource, bovinos: BovinoSembrado[]): Promise<SaludCounts> {
-  console.log('[seed] 7/10 salud (vencidos / pendientes / al día + historial 5y)...');
+  console.log('[seed] 7/10 salud...');
   const tipos = ['vacunacion', 'vitaminas', 'desparasitacion', 'enfermedad'];
   const productos = ['Aftosa', 'Brucelosis', 'Ivermectina', 'Vitamina B12', 'Antiparasitario', 'Triple bovina', 'Bacterina'];
   const rows: Record<string, unknown>[] = [];
@@ -362,7 +352,7 @@ async function seedSalud(ds: DataSource, bovinos: BovinoSembrado[]): Promise<Sal
 }
 
 async function seedFinanzas(ds: DataSource): Promise<{ ingresos: number; gastos: number }> {
-  console.log('[seed] 8/10 finanzas (60 meses × 3 fincas, tendencia creciente)...');
+  console.log('[seed] 8/10 finanzas...');
   const ingresoConceptos = [['Venta de leche', 'venta_leche'], ['Venta de novillos', 'venta_ganado'], ['Venta de quesos artesanales', 'venta_leche']];
   const gastoConceptos = [['Nómina de vaqueros', 'nomina'], ['Insumos agropecuarios', 'insumos'], ['Alimento concentrado', 'alimento'], ['Veterinaria y medicina', 'veterinaria'], ['Mantenimiento de cercas', 'insumos']];
   const rows: Record<string, unknown>[] = [];
@@ -399,14 +389,13 @@ async function seedFinanzas(ds: DataSource): Promise<{ ingresos: number; gastos:
 }
 
 async function seedReproduccion(ds: DataSource, bovinos: BovinoSembrado[]): Promise<number> {
-  console.log('[seed] 9/10 reproduccion (30 eventos)...');
+  console.log('[seed] 9/10 reproduccion...');
   const hembras = bovinos.filter((b) => b.genero === 'h' && !b.inactivo).slice(0, 30);
   const rows: Record<string, unknown>[] = [];
   hembras.forEach((b, i) => {
     const enCelo = i % 3 === 0;
     rows.push({
       pk_id_reproduccion: `REP-${i + 1}`,
-      // fk_id_madre es VARCHAR(15); el dashboard service hace b.id::text = r.fk_id_madre.
       fk_id_madre: String(b.id),
       metodo_reproduccion: enCelo ? 'monta_natural' : 'inseminacion',
       en_celo: enCelo,
@@ -429,41 +418,112 @@ async function seedVeterinarios(ds: DataSource, bovinos: BovinoSembrado[]): Prom
     { nombre: 'Dr. Jorge Ospina', especialidad: 'Cirugía veterinaria', telefono: '3207654321', email: 'jorge.ospina@vet.com', tenant_id: TENANT },
   ]);
 
+  // 10 citas variadas
   await ds.getRepository('citas').save([
     { tipo: 'vacunacion', estado: 'pendiente', alcance: 'potrero', fecha_hora: addDays(HOY, 3), fk_id_veterinario: vets[0].id, recordatorio_dias: 1, notas: 'Vacunación aftosa lote norte', tenant_id: TENANT },
     { tipo: 'revision_general', estado: 'pendiente', alcance: 'animal', fecha_hora: addDays(HOY, 7), fk_id_veterinario: vets[1].id, recordatorio_dias: 2, notas: 'Revisión reproductiva bovinos hembra', tenant_id: TENANT },
     { tipo: 'desparasitacion', estado: 'completada', alcance: 'potrero', fecha_hora: addDays(HOY, -10), fk_id_veterinario: vets[0].id, notas: 'Desparasitación interna y externa', tenant_id: TENANT },
     { tipo: 'emergencia', estado: 'completada', alcance: 'animal', fecha_hora: addDays(HOY, -5), fk_id_veterinario: vets[2].id, notas: 'Animal con cólico severo', tenant_id: TENANT },
     { tipo: 'parto_asistido', estado: 'pendiente', alcance: 'animal', fecha_hora: addDays(HOY, 14), fk_id_veterinario: vets[1].id, recordatorio_dias: 3, tenant_id: TENANT },
+    { tipo: 'vacunacion', estado: 'pendiente', alcance: 'potrero', fecha_hora: addDays(HOY, 21), fk_id_veterinario: vets[0].id, recordatorio_dias: 2, notas: 'Brucelosis lote sur', tenant_id: TENANT },
+    { tipo: 'revision_general', estado: 'completada', alcance: 'animal', fecha_hora: addDays(HOY, -20), fk_id_veterinario: vets[2].id, notas: 'Revisión general mensual', tenant_id: TENANT },
+    { tipo: 'desparasitacion', estado: 'pendiente', alcance: 'animal', fecha_hora: addDays(HOY, 30), fk_id_veterinario: vets[1].id, recordatorio_dias: 5, notas: 'Antiparasitario externo', tenant_id: TENANT },
+    { tipo: 'otro', estado: 'cancelada', alcance: 'potrero', fecha_hora: addDays(HOY, -3), fk_id_veterinario: vets[0].id, notas: 'Cancelada por lluvia', tenant_id: TENANT },
+    { tipo: 'revision_general', estado: 'pendiente', alcance: 'animal', fecha_hora: addDays(HOY, 45), fk_id_veterinario: vets[2].id, recordatorio_dias: 7, notas: 'Control de peso trimestral', tenant_id: TENANT },
   ]);
 
-  const primerBovino = bovinos.find(b => !b.inactivo);
-  if (primerBovino) {
+  // 5 tratamientos con múltiples seguimientos
+  const activosBovinos = bovinos.filter(b => !b.inactivo).slice(0, 5);
+  const diagnosticos = [
+    'Neumonía bacteriana — tratamiento con antibióticos',
+    'Mastitis crónica — tratamiento con penicilina',
+    'Diarrea neonatal — rehidratación y antibióticos',
+    'Cojera por laminitis — tratamiento antiinflamatorio',
+    'Parásitos internos — tratamiento antiparasitario',
+  ];
+  const seguimientosPorTratamiento = [
+    [
+      { obs: 'Inicio de tratamiento con oxitetraciclina. Animal con fiebre 40.2°C.', por: 'Dr. Carlos Medina' },
+      { obs: 'Día 5: fiebre bajó a 38.8°C. Mejora visible en respiración. Continuar antibiótico.', por: 'Dr. Carlos Medina' },
+      { obs: 'Día 10: animal estable, comiendo bien. Se reduce dosis.', por: 'Admin' },
+      { obs: 'Día 15: recuperación completa. Se suspende tratamiento.', por: 'Dr. Carlos Medina' },
+    ],
+    [
+      { obs: 'Diagnóstico confirmado de mastitis en cuarto posterior derecho.', por: 'Dra. Ana Robledo' },
+      { obs: 'Día 3: leve mejoría. Continuar tratamiento intramamario.', por: 'Dra. Ana Robledo' },
+      { obs: 'Día 7: sin mejoría significativa. Se cambia antibiótico.', por: 'Dr. Carlos Medina' },
+    ],
+    [
+      { obs: 'Ternero con diarrea amarilla profusa. Se inicia rehidratación oral.', por: 'Dr. Jorge Ospina' },
+      { obs: 'Día 2: mejora en hidratación. Se agrega antibiótico oral.', por: 'Dr. Jorge Ospina' },
+      { obs: 'Día 4: ternero recuperado. Alta médica.', por: 'Admin' },
+    ],
+    [
+      { obs: 'Animal con cojera severa en pata delantera izquierda.', por: 'Dr. Carlos Medina' },
+      { obs: 'Día 3: se aplica vendaje y antiinflamatorio inyectable.', por: 'Dr. Carlos Medina' },
+    ],
+    [
+      { obs: 'Control parasitario preventivo. Se aplica ivermectina.', por: 'Dra. Ana Robledo' },
+      { obs: 'Día 14: seguimiento post-tratamiento. Sin signos de parasitosis.', por: 'Admin' },
+    ],
+  ];
+
+  for (let i = 0; i < activosBovinos.length; i++) {
+    const b = activosBovinos[i];
     const tratamiento = await ds.getRepository('tratamientos').save({
-      fk_id_bovino: primerBovino.id,
-      diagnostico: 'Neumonía bacteriana — tratamiento con antibióticos',
-      fecha_inicio: isoDate(addDays(HOY, -15)),
-      fecha_fin_estimada: isoDate(addDays(HOY, 5)),
-      estado: 'en_curso',
-      fk_id_veterinario: vets[0].id,
+      fk_id_bovino: b.id,
+      diagnostico: diagnosticos[i],
+      fecha_inicio: isoDate(addDays(HOY, -randInt(5, 30))),
+      fecha_fin_estimada: isoDate(addDays(HOY, randInt(5, 20))),
+      estado: i < 3 ? 'en_curso' : i === 3 ? 'completado' : 'en_curso',
+      fk_id_veterinario: vets[i % 3].id,
       tenant_id: TENANT,
     });
-
-    await ds.getRepository('seguimientos_tratamiento').save([
-      { fk_id_tratamiento: tratamiento.id, observacion: 'Inicio de tratamiento con oxitetraciclina. Animal con fiebre 40.2°C.', registrado_por: 'Dr. Carlos Medina' },
-      { fk_id_tratamiento: tratamiento.id, observacion: 'Día 5: fiebre bajó a 38.8°C. Mejora visible en respiración. Continuar antibiótico.', registrado_por: 'Dr. Carlos Medina' },
-      { fk_id_tratamiento: tratamiento.id, observacion: 'Día 10: animal estable, comiendo bien. Se reduce dosis.', registrado_por: 'Admin' },
-    ]);
+    const segs = seguimientosPorTratamiento[i];
+    await ds.getRepository('seguimientos_tratamiento').save(
+      segs.map(s => ({ fk_id_tratamiento: tratamiento.id, observacion: s.obs, registrado_por: s.por }))
+    );
   }
 
   return vets.length;
 }
 
-// ---------------- Orquestador ----------------
+async function seedProveedores(ds: DataSource): Promise<void> {
+  console.log('[seed] Proveedores y precios demo...');
+
+  const alimentos = await ds.query(`SELECT pk_id_alimento, tipo_alimento FROM alimento WHERE tenant_id = '${TENANT}'`);
+
+  const proveedores = await ds.getRepository('proveedores').save([
+    { nombre: 'Agropecuaria El Progreso', contacto: 'Juan Pérez', telefono: '3001112233', email: 'ventas@elprogreso.com', direccion: 'Cra 5 #10-20, Montería', notas: 'Entrega los martes y viernes', tenant_id: TENANT },
+    { nombre: 'Distribuidora Campo Verde', contacto: 'María López', telefono: '3154445566', email: 'info@campoverde.com', direccion: 'Calle 8 #3-15, Sincelejo', tenant_id: TENANT },
+    { nombre: 'Suministros La Cosecha', contacto: 'Pedro Ruiz', telefono: '3207778899', direccion: 'Km 3 vía Cereté', notas: 'Solo venta al por mayor', tenant_id: TENANT },
+    { nombre: 'Agro Insumos del Caribe', contacto: 'Luis Martínez', telefono: '3101234567', email: 'luism@agroinsumos.com', direccion: 'Calle 15 #8-30, Montería', tenant_id: TENANT },
+    { nombre: 'Concentrados La Esperanza', contacto: 'Rosa Díaz', telefono: '3209876543', email: 'rdiaz@laesperanza.com', direccion: 'Carretera Lorica Km 5', notas: 'Mejor precio en concentrados', tenant_id: TENANT },
+  ]);
+
+  if (alimentos.length > 0) {
+    const precios: any[] = [];
+    // Cada proveedor vende entre 4 y 6 alimentos con precios distintos
+    for (const prov of proveedores) {
+      const nAlimentos = randInt(4, Math.min(6, alimentos.length));
+      const shuffled = [...alimentos].sort(() => Math.random() - 0.5).slice(0, nAlimentos);
+      for (const alimento of shuffled) {
+        precios.push({
+          fk_id_proveedor: prov.id,
+          fk_id_alimento: alimento.pk_id_alimento,
+          precio: parseFloat((Math.random() * 60000 + 15000).toFixed(2)),
+          unidad: pick(['bulto 40kg', 'bulto 50kg', 'kg', 'tonelada']),
+        });
+      }
+    }
+    await ds.getRepository('proveedor_precios').save(precios);
+  }
+}
 
 export async function runSeed(ds: DataSource): Promise<void> {
   await truncateAll(ds);
   await seedAdmin(ds);
+  await seedAlimentos(ds);
   await seedFincas(ds);
   const potrerosPorFinca = await seedPotreros(ds);
   const bovinos = await seedBovinos(ds, potrerosPorFinca);
@@ -472,6 +532,7 @@ export async function runSeed(ds: DataSource): Promise<void> {
   const finanzas = await seedFinanzas(ds);
   const nRepro = await seedReproduccion(ds, bovinos);
   const nVets = await seedVeterinarios(ds, bovinos);
+  await seedProveedores(ds);
 
   console.log('[seed] 10/10 resumen');
   console.log('+----------------------------------------------------+');

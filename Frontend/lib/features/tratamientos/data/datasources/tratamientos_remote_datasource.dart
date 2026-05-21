@@ -38,4 +38,13 @@ class TratamientosRemoteDataSource {
     final response = await _dio.post('/tratamientos/$id/seguimientos', data: data);
     return SeguimientoTratamiento.fromJson(response.data);
   }
+
+  Future<SeguimientoTratamiento> updateSeguimiento(int seguimientoId, String observacion) async {
+    final response = await _dio.patch('/tratamientos/seguimientos/$seguimientoId', data: {'observacion': observacion});
+    return SeguimientoTratamiento.fromJson(response.data);
+  }
+
+  Future<void> deleteSeguimiento(int seguimientoId) async {
+    await _dio.delete('/tratamientos/seguimientos/$seguimientoId');
+  }
 }

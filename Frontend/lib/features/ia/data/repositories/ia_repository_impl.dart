@@ -38,6 +38,8 @@ class IaRepositoryImpl implements IaRepository {
       return Right(await body());
     } on DioException catch (e) {
       return Left(_toFailure(e));
+    } on AppFailure catch (e) {
+      return Left(e);
     } catch (_) {
       return const Left(
         UnknownFailure('Error procesando la respuesta del servidor'),
