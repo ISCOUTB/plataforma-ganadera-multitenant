@@ -142,23 +142,26 @@ class HomeShell extends StatelessWidget {
             );
           }
         },
-        child: Stack(
-          children: [
-            Scaffold(
-              body: child,
-              floatingActionButton: showFab
-                  ? AppSquircleFab(onPressed: () => _openQuickCreate(context))
-                  : null,
-              floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-              bottomNavigationBar: HomeBottomNav(
-                currentLocation: location,
-                onTap: (path) {
-                  if (path != location) context.go(path);
-                },
-              ),
-            ),
-            if (showFab) const AiChatFab(),
-          ],
+        child: Scaffold(
+          body: child,
+          floatingActionButton: showFab
+              ? Column(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    const AiChatFab(),
+                    const SizedBox(height: 16),
+                    AppSquircleFab(onPressed: () => _openQuickCreate(context)),
+                  ],
+                )
+              : null,
+          floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+          bottomNavigationBar: HomeBottomNav(
+            currentLocation: location,
+            onTap: (path) {
+              if (path != location) context.go(path);
+            },
+          ),
         ),
       ),
     );
