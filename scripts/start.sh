@@ -179,7 +179,7 @@ LOG_FILE="$ROOT/.run/backend.log"
 cd "$ROOT/Backend"
 nohup npm run start:dev > "$LOG_FILE" 2>&1 &
 BACK_PID=$!
-echo "$BACK_PID" > "$PID_FILE"
+echo "$BACK_PID" > "$ROOT/.run/backend.pid"
 ok "Backend lanzado (PID $BACK_PID). Logs: .run/backend.log"
 
 # ---------- 6. Health check ----------

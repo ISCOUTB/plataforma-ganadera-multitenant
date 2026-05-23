@@ -84,3 +84,14 @@ AGENTS.md
 # --- Windows basura ---
 Thumbs.db
 desktop.ini
+
+# --- Documentos de arquitectura y guías ---
+AI_MODEL_ARCHITECTURE.md
+FRONTEND_ARCHITECTURE.md
+IA_IMPLEMENTATION.md
+RESUMEN.md
+SETUP_GUIDE.md
+
+# --- Agentes y configuración opencode ---
+.agents/
+opencode.json

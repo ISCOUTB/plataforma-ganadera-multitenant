@@ -83,6 +83,7 @@ class _AiChatDialog extends StatefulWidget {
 class _AiChatDialogState extends State<_AiChatDialog> {
   final _controller = TextEditingController();
   final _scrollController = ScrollController();
+  final List<ChatMessage> _lastMessages = [];
 
   @override
   void dispose() {
@@ -104,18 +105,16 @@ class _AiChatDialogState extends State<_AiChatDialog> {
         );
 
     _controller.clear();
-    _scrollToBottom();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToBottom());
   }
 
   void _scrollToBottom() {
     if (_scrollController.hasClients) {
-      Future.delayed(const Duration(milliseconds: 100), () {
-        _scrollController.animateTo(
-          _scrollController.position.maxScrollExtent,
-          duration: const Duration(milliseconds: 200),
-          curve: Curves.easeOut,
-        );
-      });
+      _scrollController.animateTo(
+        _scrollController.position.maxScrollExtent,
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeOut,
+      );
     }
   }
 
@@ -192,57 +191,63 @@ class _AiChatDialogState extends State<_AiChatDialog> {
               child: BlocConsumer<ChatBloc, ChatState>(
                 listener: (context, state) {
                   if (state is ChatSuccessState) {
-                    _scrollToBottom();
+                    WidgetsBinding.instance.addPostFrameCallback(
+                      (_) => _scrollToBottom(),
+                    );
                   }
                 },
                 builder: (context, state) {
-                  if (state is ChatLoadingState &&
-                      state is! ChatSuccessState) {
-                    return const Center(child: CircularProgressIndicator());
+                  final isLoading = state is ChatLoadingState;
+                  final isError = state is ChatErrorState;
+
+                  List<ChatMessage> messages;
+                  if (state is ChatSuccessState) {
+                    messages = state.messages;
+                    _lastMessages
+                      ..clear()
+                      ..addAll(messages);
+                  } else {
+                    messages = List.unmodifiable(_lastMessages);
                   }
 
-                  if (state is ChatErrorState) {
-                    return Center(
-                      child: Padding(
-                        padding: const EdgeInsets.all(24),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.error_outline_rounded,
-                              color: cs.error,
-                              size: 40,
-                            ),
-                            const SizedBox(height: 12),
-                            Text(
-                              state.message,
-                              textAlign: TextAlign.center,
-                              style: theme.textTheme.bodySmall?.copyWith(
+                  if (messages.isEmpty && !isLoading) {
+                    if (isError) {
+                      return Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(24),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.error_outline_rounded,
                                 color: cs.error,
+                                size: 40,
                               ),
-                            ),
-                            const SizedBox(height: 12),
-                            TextButton(
-                              onPressed: () {
-                                context.read<ChatBloc>().add(
-                                      LoadChatHistoryEvent(
-                                        tenantId: widget.tenantId,
-                                        fincaId: widget.fincaId,
-                                      ),
-                                    );
-                              },
-                              child: const Text('Reintentar'),
-                            ),
-                          ],
+                              const SizedBox(height: 12),
+                              Text(
+                                state.message,
+                                textAlign: TextAlign.center,
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: cs.error,
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              TextButton(
+                                onPressed: () {
+                                  context.read<ChatBloc>().add(
+                                        LoadChatHistoryEvent(
+                                          tenantId: widget.tenantId,
+                                          fincaId: widget.fincaId,
+                                        ),
+                                      );
+                                },
+                                child: const Text('Reintentar'),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                    );
-                  }
-
-                  final messages =
-                      state is ChatSuccessState ? state.messages : <ChatMessage>[];
-
-                  if (messages.isEmpty) {
+                      );
+                    }
                     return Center(
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
@@ -274,8 +279,25 @@ class _AiChatDialogState extends State<_AiChatDialog> {
                   return ListView.builder(
                     controller: _scrollController,
                     padding: const EdgeInsets.all(12),
-                    itemCount: messages.length,
+                    itemCount: messages.length + (isLoading ? 1 : 0),
                     itemBuilder: (context, index) {
+                      if (isLoading && index == messages.length) {
+                        return const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 8, horizontal: 14),
+                          child: SizedBox(
+                            width: 40,
+                            child: Row(
+                              children: [
+                                _TypingDot(delay: 0),
+                                SizedBox(width: 4),
+                                _TypingDot(delay: 200),
+                                SizedBox(width: 4),
+                                _TypingDot(delay: 400),
+                              ],
+                            ),
+                          ),
+                        );
+                      }
                       final msg = messages[index];
                       final isUser = msg.role == ChatMessageRole.user;
 
@@ -391,6 +413,57 @@ class _AiChatDialogState extends State<_AiChatDialog> {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _TypingDot extends StatefulWidget {
+  final int delay;
+  const _TypingDot({required this.delay});
+
+  @override
+  State<_TypingDot> createState() => _TypingDotState();
+}
+
+class _TypingDotState extends State<_TypingDot>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    );
+    _animation = Tween<double>(begin: 0.3, end: 1.0).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    );
+    Future.delayed(Duration(milliseconds: widget.delay), () {
+      if (mounted) _controller.repeat(reverse: true);
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return FadeTransition(
+      opacity: _animation,
+      child: Container(
+        width: 6,
+        height: 6,
+        decoration: BoxDecoration(
+          color: cs.onSurfaceVariant,
+          shape: BoxShape.circle,
         ),
       ),
     );
