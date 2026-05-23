@@ -10,6 +10,7 @@ set -e
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 PIDFILE="$ROOT/.run/backend.pid"
+AI_PIDFILE="$ROOT/.run/ai_proxy.pid"
 
 G='\033[0;32m'
 Y='\033[1;33m'
@@ -28,6 +29,20 @@ if [ -f "$PIDFILE" ]; then
   rm -f "$PIDFILE"
 else
   echo -e "${Y}⚠${NC} No hay backend marcado como corriendo (.run/backend.pid no existe)"
+fi
+
+# AI Proxy
+if [ -f "$AI_PIDFILE" ]; then
+  AI_PID=$(cat "$AI_PIDFILE")
+  if kill -0 "$AI_PID" 2>/dev/null; then
+    kill "$AI_PID" 2>/dev/null || true
+    echo -e "${G}✓${NC} IA Proxy detenido (PID $AI_PID)"
+  else
+    echo -e "${Y}⚠${NC} El PID $AI_PID del IA Proxy ya no existía"
+  fi
+  rm -f "$AI_PIDFILE"
+else
+  echo -e "${Y}⚠${NC} No hay IA Proxy marcado como corriendo (.run/ai_proxy.pid no existe)"
 fi
 
 # Por si el watch dejó subprocesos huérfanos

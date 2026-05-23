@@ -10,10 +10,11 @@
 # Pasos:
 #   1. Limpieza forzosa: PID file previo, puerto 3000 y node.exe huérfanos.
 #   2. docker compose up -d  (PostgreSQL en farmlink-db).
-#   3. Backend: npm install (si falta), migration:run, seed (vía seed.sh).
-#   4. Backend: npm run start:dev en background (logs en .run/backend.log).
-#   5. Health check: poll http://localhost:3000/api/docs hasta 200 OK.
-#   6. Frontend: flutter run -d chrome --dart-define=API_BASE_URL=...
+#   3. IA Proxy: pip install, uvicorn main:app en background (logs en .run/ai_proxy.log).
+#   4. Backend: npm install (si falta), migration:run, seed (vía seed.sh).
+#   5. Backend: npm run start:dev en background (logs en .run/backend.log).
+#   6. Health check: poll http://localhost:3000/api/docs hasta 200 OK.
+#   7. Frontend: flutter run -d chrome --dart-define=API_BASE_URL=...
 #
 # Para detener el backend tras cerrar Flutter (Ctrl+C):
 #   ./scripts/stop.sh          # solo backend
@@ -31,34 +32,38 @@ warn()  { echo -e "${Y}  ⚠${NC} $1"; }
 fail()  { echo -e "${R}  ✗${NC} $1"; exit 1; }
 
 # ---------- 1. Limpieza forzosa ----------
-step "1/6 Limpiando procesos previos"
+step "1/7 Limpiando procesos previos"
 
-PID_FILE="$ROOT/.run/backend.pid"
-if [ -f "$PID_FILE" ]; then
-  OLD_PID="$(cat "$PID_FILE" 2>/dev/null || true)"
-  if [ -n "${OLD_PID:-}" ]; then
-    kill "$OLD_PID" 2>/dev/null || true
+for PF in backend.pid ai_proxy.pid; do
+  PF_PATH="$ROOT/.run/$PF"
+  if [ -f "$PF_PATH" ]; then
+    OLD_PID="$(cat "$PF_PATH" 2>/dev/null || true)"
+    if [ -n "${OLD_PID:-}" ]; then
+      kill "$OLD_PID" 2>/dev/null || true
+    fi
+    rm -f "$PF_PATH"
   fi
-  rm -f "$PID_FILE"
-fi
+done
 
-# Liberar puerto 3000 si está ocupado (Windows: netstat + taskkill)
-PORT_PIDS=$(netstat -ano 2>/dev/null | grep ":3000 " | grep -i LISTENING | awk '{print $NF}' | sort -u || true)
-if [ -n "${PORT_PIDS:-}" ]; then
-  for PID in $PORT_PIDS; do
-    taskkill //F //PID "$PID" >/dev/null 2>&1 || true
-  done
-  ok "Liberado puerto 3000 (PIDs: $PORT_PIDS)"
-else
-  ok "Puerto 3000 libre"
-fi
+# Liberar puertos 3000 y 8000 si están ocupados (Windows: netstat + taskkill)
+for PORT in 3000 8000; do
+  PORT_PIDS=$(netstat -ano 2>/dev/null | grep ":$PORT " | grep -i LISTENING | awk '{print $NF}' | sort -u || true)
+  if [ -n "${PORT_PIDS:-}" ]; then
+    for PID in $PORT_PIDS; do
+      taskkill //F //PID "$PID" >/dev/null 2>&1 || true
+    done
+    ok "Liberado puerto $PORT (PIDs: $PORT_PIDS)"
+  else
+    ok "Puerto $PORT libre"
+  fi
+done
 
 # Matar cualquier node.exe huérfano de un start:dev anterior
 taskkill //F //IM node.exe >/dev/null 2>&1 || true
 ok "Procesos node.exe previos finalizados"
 
 # ---------- 2. Docker / PostgreSQL ----------
-step "2/6 Levantando PostgreSQL (docker compose)"
+step "2/7 Levantando PostgreSQL (docker compose)"
 if ! command -v docker >/dev/null 2>&1; then
   fail "Docker no está instalado."
 fi
@@ -80,8 +85,60 @@ for i in $(seq 1 30); do
   sleep 1
 done
 
-# ---------- 3. Backend: deps + migraciones + seed ----------
-step "3/6 Preparando Backend (deps, migraciones, seed)"
+# ---------- 3. Backend IA Proxy ----------
+step "3/7 Levantando Backend IA Proxy"
+AI_PROXY_DIR="$ROOT/Backend-IA-Proxy"
+
+if [ ! -f "$AI_PROXY_DIR/.env" ]; then
+  if [ -f "$AI_PROXY_DIR/.env.example" ]; then
+    warn "IA Proxy .env no existe — copiando de .env.example"
+    cp "$AI_PROXY_DIR/.env.example" "$AI_PROXY_DIR/.env"
+  else
+    fail "Falta Backend-IA-Proxy/.env y no hay .env.example"
+  fi
+else
+  ok "IA Proxy .env presente"
+fi
+
+if [ ! -d "$AI_PROXY_DIR/__pycache__" ]; then
+  warn "Dependencias Python no instaladas — corriendo pip install..."
+  cd "$AI_PROXY_DIR"
+  pip install -r requirements.txt > /dev/null 2>&1 || \
+    pip3 install -r requirements.txt > /dev/null 2>&1 || \
+    warn "No se pudo instalar dependencias Python (pip no encontrado)"
+  ok "Dependencias Python instaladas"
+else
+  ok "Dependencias Python ya instaladas"
+fi
+
+mkdir -p "$ROOT/.run"
+AI_LOG_FILE="$ROOT/.run/ai_proxy.log"
+AI_PID_FILE="$ROOT/.run/ai_proxy.pid"
+
+cd "$AI_PROXY_DIR"
+nohup python -m uvicorn main:app --host 0.0.0.0 --port 8000 > "$AI_LOG_FILE" 2>&1 &
+AI_PID=$!
+echo "$AI_PID" > "$AI_PID_FILE"
+ok "IA Proxy lanzado (PID $AI_PID). Logs: .run/ai_proxy.log"
+
+for i in $(seq 1 15); do
+  set +e
+  CODE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8000/health 2>/dev/null)
+  set -e
+  if [ "$CODE" = "200" ]; then
+    ok "IA Proxy responde (HTTP 200)"
+    break
+  fi
+  if [ "$i" = "15" ]; then
+    warn "IA Proxy no respondió en 15 s (el chat usará modo offline)"
+  fi
+  sleep 1
+done
+
+cd "$ROOT"
+
+# ---------- 4. Backend: deps + migraciones + seed ----------
+step "4/7 Preparando Backend (deps, migraciones, seed)"
 cd "$ROOT/Backend"
 
 if [ ! -f .env ]; then
@@ -114,8 +171,8 @@ ok "Migraciones aplicadas"
 # levantará limpio en el siguiente paso.
 bash "$ROOT/scripts/seed.sh"
 
-# ---------- 4. Backend en background ----------
-step "4/6 Levantando Backend NestJS en background"
+# ---------- 5. Backend en background ----------
+step "5/7 Levantando Backend NestJS en background"
 mkdir -p "$ROOT/.run"
 LOG_FILE="$ROOT/.run/backend.log"
 
@@ -125,8 +182,8 @@ BACK_PID=$!
 echo "$BACK_PID" > "$PID_FILE"
 ok "Backend lanzado (PID $BACK_PID). Logs: .run/backend.log"
 
-# ---------- 5. Health check ----------
-step "5/6 Esperando a http://localhost:3000/api/docs"
+# ---------- 6. Health check ----------
+step "6/7 Esperando a http://localhost:3000/api/docs"
 HEALTH_OK=0
 for i in $(seq 1 90); do
   set +e
@@ -149,8 +206,8 @@ if [ "$HEALTH_OK" != "1" ]; then
   fail "Backend no respondió 200 en 90 s"
 fi
 
-# ---------- 6. Frontend Flutter ----------
-step "6/6 Levantando Frontend Flutter en Chrome"
+# ---------- 7. Frontend Flutter ----------
+step "7/7 Levantando Frontend Flutter en Chrome"
 cd "$ROOT/Frontend"
 
 if ! command -v flutter >/dev/null 2>&1; then
@@ -169,7 +226,9 @@ ${G}  ✓ Backend listo. Lanzando Flutter en Chrome…${NC}
 
   Backend:  http://localhost:3000/api
   Swagger:  http://localhost:3000/api/docs
+  IA Proxy: http://localhost:8000/health
   Logs:     tail -f .run/backend.log
+  AI Logs:  tail -f .run/ai_proxy.log
 
   Login demo:
     Email:    admin@farmlink.com
